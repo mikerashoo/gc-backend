@@ -9,6 +9,135 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+// Users 
+enum UserRole {
+  ADMIN
+  PROVIDER_ADMIN
+  BRANCH_ADMIN
+  CASHIER
+}
+
+// Users 
+enum ActiveStatus {
+  ACTIVE
+  IN_ACTIVE
+}
+
+model User {
+  id       String @id @default(cuid())
+  fullName String
+
+  email       String? @unique
+  userName    String? @unique
+  phoneNumber String  @unique
+  password    String
+
+  role            UserRole
+  status          ActiveStatus   @default(ACTIVE)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  refreshTokens   RefreshToken[]
+  providers       Provider[]
+  cashierBranches Branch[]
+  tickets         Ticket[]
+}
+
+model RefreshToken {
+  id          String   @id @unique @default(uuid())
+  hashedToken String
+  userId      String
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  revoked     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// providers
+model Provider {
+  id         String @id @default(cuid())
+  name       String
+  identifier String @unique
+  address    String
+
+  status    ActiveStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  admins    User[]
+  branches  Branch[]
+}
+
+// branch
+model Branch {
+  id         String @id @default(cuid())
+  identifier String @unique
+  name       String
+  address    String
+  providerId String
+
+  status    ActiveStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  provider  Provider     @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  cashiers  User[]
+  kenoGames KenoGame[]
+}
+
+// Keno Game
+enum KenoGameStatus {
+  NOT_STARTED
+  ON_PLAY
+  DONE
+}
+
+enum TicketStatus {
+  ON_PLAY
+  WIN
+  LOSE
+}
+
+model BranchGame {
+  id         String @id @default(cuid())
+  branchId       String
+    createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model KenoGame {
+  id         String @id @default(cuid())
+  kenoGameId String
+
+  status         KenoGameStatus @default(NOT_STARTED) // "scheduled", "running", "completed"
+  branchId       String
+  winningNumbers Int[] // New field to store winning numbers as a comma-separated string
+
+  startAt                        DateTime
+  ticketWillBeDisabledAt         DateTime
+  winningNumberWillBeGeneratedAt DateTime
+  endAt                          DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tickets Ticket[]
+  branch  Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+}
+
+model Ticket {
+  id           String       @id @default(cuid())
+  kenoTicketId String
+  gameId       String
+  cashierId    String
+  numbers      Int[] // Comma-separated numbers
+  betAmount    Float
+  winAmount    Float?       @default(0.0)
+  status       TicketStatus @default(ON_PLAY)
+  createdAt    DateTime     @default(now())
+
+  game    KenoGame @relation(fields: [gameId], references: [id])
+  cashier User     @relation(fields: [cashierId], references: [id])
 }
