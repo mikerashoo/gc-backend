@@ -1,20 +1,3 @@
-// src/types/index.ts 
-
-import { KenoGame, Ticket } from "@prisma/client";
-
-export type GameUpdateData = {
-  game: KenoGameWithTickets;
-  previousGame: KenoGameWithTickets | null;
-  counter: number | null;
-  ticketAllowed: boolean;
-  currentNumber: number | null;
-  displayedNumbers: number[];
-  payoutsArray: ISelectionPayout[];
-};
-
-export type KenoGameWithTickets = {
-  tickets: Ticket[];
-} & KenoGame;
 
 export interface ISelectionPayout {
   numberSelection: number;
@@ -24,15 +7,14 @@ export interface ISelectionPayout {
 export interface IKenoGameConfigurations {
   startNumber: number;
   endNumber: number;
-  minBetAbout: number;
-  maxBetAbout: number;
+  minBetAmount: number;
+  maxBetAmount: number;
   minTIcketNumbersCount: number;
   maxTIcketNumbersCount: number;
   showWinningNumberTimePerNumber: number;
   numberOfWinningNumbers: number;
   secondsBeforeGeneratingWinningNumbers: number;
-  kenoPayoutMultiplier: ISelectionPayout[];
-
+  kenoPayoutMultiplier: IKenoPayout[]; 
 }
 
 export interface IKenoGameTimeConfigurations {
@@ -40,4 +22,19 @@ export interface IKenoGameTimeConfigurations {
   ticketWillBeDisabledAt: Date;
   winningNumberWillBeGeneratedAt: Date;
   endAt: Date;
+}
+
+export interface IKenoPayoutTable {
+  selection: number,
+  payouts:  IKenoPayoutOfSelection[]
+}
+
+export interface IKenoPayoutOfSelection {
+  hit: number; 
+  pay: number;
+}
+
+export interface IKenoPayout {
+  hits: number[],
+  pays: number[]
 }

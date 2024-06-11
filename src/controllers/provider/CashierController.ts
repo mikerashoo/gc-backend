@@ -40,15 +40,20 @@ export const registerCashierToBranch = async (req: Request, res: Response) => {
         phoneNumber,
         role: UserRole.CASHIER,
         password: hashedPassword,
-        cashierBranches: {
-          connect: {
-            id: branchId
-          }
-        }
+        
       },
     });
 
-    return res.status(200).json(cashier);
+    delete cashier.password;
+
+    const cashierAccount = await db.cashierAccount.create({
+      data: {
+        branchId,
+        userId: cashier.id
+      },
+    });  
+
+    return res.status(200).json({...cashier,  cashierAccount});
   } catch (error) {
     console.error("Error fetching branches", error);
     return res.status(500).json({ error: "Failed to fetch branches" });

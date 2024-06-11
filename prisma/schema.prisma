@@ -42,9 +42,19 @@ model User {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   refreshTokens   RefreshToken[]
-  providers       Provider[]
-  cashierBranches Branch[]
+  providers       Provider[] 
+  cashierAccounts         CashierAccount[]
+}
+
+model CashierAccount {
+  id          String   @id @unique @default(uuid())
+  userId String @unique
+  branchId String 
+  profile  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branch  Branch     @relation(fields: [branchId], references: [id], onDelete: Cascade)
   tickets         Ticket[]
+  ticketPayments         TicketPayment[]
+
 }
 
 model RefreshToken {
@@ -83,7 +93,7 @@ model Branch {
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
   provider  Provider     @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  cashiers  User[]
+  cashiers  CashierAccount[] 
   kenoGames KenoGame[]
 }
 
@@ -98,15 +108,16 @@ enum TicketStatus {
   ON_PLAY
   WIN
   LOSE
+  PAYED
 }
 
-model BranchGame {
-  id         String @id @default(cuid())
-  branchId       String
-    createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
 
+enum TicketSelectionStatus {
+  ON_PLAY
+  WIN
+  LOSE 
+}
+ 
 model KenoGame {
   id         String @id @default(cuid())
   kenoGameId String
@@ -131,13 +142,40 @@ model Ticket {
   id           String       @id @default(cuid())
   kenoTicketId String
   gameId       String
-  cashierId    String
-  numbers      Int[] // Comma-separated numbers
-  betAmount    Float
+  cashierId    String 
+  totalBetAmount    Float?
+  possibleWinAmount    Float?
   winAmount    Float?       @default(0.0)
   status       TicketStatus @default(ON_PLAY)
   createdAt    DateTime     @default(now())
 
   game    KenoGame @relation(fields: [gameId], references: [id])
-  cashier User     @relation(fields: [cashierId], references: [id])
+  cashier CashierAccount     @relation(fields: [cashierId], references: [id])
+  payment TicketPayment?
+  selections TicketSelection[]
+}
+
+
+
+model TicketSelection {
+  id           String       @id @default(cuid())
+  ticketId String 
+  selectedNumbers      Int[] 
+  betAmount    Float
+  possibleWinAmount    Float?      
+  winAmount    Float?      
+  status       TicketSelectionStatus @default(ON_PLAY)
+  ticket    Ticket @relation(fields: [ticketId], references: [id]) 
+}
+
+model TicketPayment {
+  id           String       @id @default(cuid())
+  ticketId String @unique
+  cashierId    String 
+  payedAmount    Float?       @default(0.0)
+  status       TicketStatus @default(ON_PLAY)
+  createdAt    DateTime     @default(now())
+
+  ticket    Ticket @relation(fields: [ticketId], references: [id])
+  cashier CashierAccount     @relation(fields: [cashierId], references: [id])
 }

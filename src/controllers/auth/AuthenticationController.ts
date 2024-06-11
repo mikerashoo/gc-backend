@@ -89,20 +89,31 @@ export const cashierLogin = async (req: Request, res: Response) => {
       return res.status(403).json({ error: "Invalid user role. User is not cashier" });
     }
 
-    const branch = await db.branch.findUnique({
-      where: {identifier: branchIdentifier, cashiers: {
-        some: {
-          id: existingUser.id
+    const cashierAccount  = await db.cashierAccount.findFirst({
+      where: {
+        userId: existingUser.id,
+        branch: {
+          identifier: branchIdentifier
         }
-      }}
+      },
+      include: {
+        branch: true,
+        profile: true
+      }
     })
-   
-    if(!branch){
+ 
+    if(!cashierAccount){
       return res.status(403).json({ error: "Invalid branch identifier" });
     }
 
+    delete existingUser.password;
+    const user = {
+      ...existingUser,
+      account: cashierAccount,
+    }
+
     const jti = uuidv4();
-    const { accessToken, refreshToken, accessTokenExpires } = generateTokens(existingUser, jti);
+    const { accessToken, refreshToken, accessTokenExpires } = generateTokens(user, jti);
     
     await addRefreshTokenToWhitelist({
       jti,
@@ -110,10 +121,9 @@ export const cashierLogin = async (req: Request, res: Response) => {
       userId: existingUser.id,
     });
 
-    delete existingUser.password; 
+    delete cashierAccount.profile.password; 
     return res.status(201).json({
-      ...existingUser,
-      branch,
+      ...cashierAccount, 
       accessToken,
       refreshToken,
       accessTokenExpires

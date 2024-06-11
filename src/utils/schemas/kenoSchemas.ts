@@ -5,6 +5,8 @@ const uniqueNumberArray = (array: number[]) => {
   return array.length === new Set(array).size;
 };
 
+
+
  
 // provider schemas
 export const kenoTicketSchema = z.object({
@@ -15,6 +17,8 @@ export const kenoTicketSchema = z.object({
     winAmount: z.number(),  
   });
     
+  export const createKenoTicketSchema = z.object({
+    selections: z.array(kenoTicketSchema)
+  })
 
-
-  export type IKenoTicketCreateData = z.infer<typeof kenoTicketSchema>;
+  export type IKenoTicketCreateData = z.infer<typeof createKenoTicketSchema>;

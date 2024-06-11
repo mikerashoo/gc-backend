@@ -1,25 +1,24 @@
 import { Request, Response } from "express";  
-import db from "../../lib/db";
-import { kenoPayoutMultiplier, getOrCreateCurrentKenoGame, checkAndGenerateWinningNumbers } from "../../services/keno-game-services";
+import db from "../../lib/db"; 
 import { kenoGameConstants } from "../../utils/constants/kenoGameConstants";
 import { IKenoGameConfigurations } from "../../utils/types/keno";
+import { getOrCreateCurrentKenoGame } from "../../services/keno/gameLogics";
  
 export const getKenoGameConfigurations = async (req: Request, res: Response) => {
   try {
-   
-    
+
     const configuration : IKenoGameConfigurations = {
       startNumber: kenoGameConstants.startNumber,
       endNumber: kenoGameConstants.endNumber,
-      minBetAbout: kenoGameConstants.minBetAmount,
-      maxBetAbout: kenoGameConstants.maxBetAmount,
+      minBetAmount: kenoGameConstants.minBetAmount,
+      maxBetAmount: kenoGameConstants.maxBetAmount,
       minTIcketNumbersCount: kenoGameConstants.minNumberOfTicketsToSelect,
       maxTIcketNumbersCount: kenoGameConstants.maxNumberOfTicketsToSelect,
       
       numberOfWinningNumbers: kenoGameConstants.numberOfWinningNumbersToGenerate,
       secondsBeforeGeneratingWinningNumbers: kenoGameConstants.totalTimeBeforeGeneratingWinningNumbersInSeconds,
       showWinningNumberTimePerNumber: kenoGameConstants.singleWinningNumberShowTimeInSeconds,
-      kenoPayoutMultiplier: kenoPayoutMultiplier
+      kenoPayoutMultiplier: kenoGameConstants.payoutTable
     }
     return res.status(201).json(configuration);
   } catch (error) {
@@ -32,24 +31,24 @@ export const getKenoGameConfigurations = async (req: Request, res: Response) => 
 export const currentKenoGameOfBranch = async (req: Request, res: Response) => {
   try {
     const  branchId  = req.params.branchId;
-    
-    const game = await getOrCreateCurrentKenoGame(branchId);
+     
+    const game = await getOrCreateCurrentKenoGame(branchId); 
 
     let previousGame = await db.kenoGame.findFirst({
       where: {
-        endAt: { lt: new Date(game.endAt) },
+        startAt: { lt: new Date(game.startAt) },
         branchId,
+        tickets: {
+         every: {}
+        }
       },
-      orderBy: { endAt: "desc" },
+      orderBy: { startAt: "desc" },
       include: {
-        tickets: { orderBy: { createdAt: "desc" } },
+        tickets: { include: {selections: true}, orderBy: { createdAt: "desc" },  },
+
       },
     });
-  
-    if (previousGame) { 
-      previousGame = await checkAndGenerateWinningNumbers(previousGame);
-    }
-
+   
     
     return res.status(201).json({current: game, previous: previousGame });
   } catch (error) {
@@ -72,15 +71,15 @@ export const getGameDetail = async (req: Request, res: Response) => {
     let game = await db.kenoGame.findFirst({
       where: { id: String(gameId),  }, 
       include: {
-        tickets: { orderBy: { createdAt: "desc" } },
+        tickets: { include: {selections: true}, orderBy: { createdAt: "desc" },  },
+
       },
     });
   
     if (!game) {
       throw new Error("Invalid game id provided")
     }  
-
-    game = await checkAndGenerateWinningNumbers(game);
+ 
    
     return res.status(201).json(game);
   } catch (error) {
@@ -105,15 +104,11 @@ export const previousGames = async (req: Request, res: Response) => {
         }
       },
       include: {
-        tickets: { orderBy: { createdAt: "desc" } },
+        tickets: { include: {selections: true}, orderBy: { createdAt: "desc" },  },
+
       },
     });
-
-    for (let game of games) {
-     
-    game = await checkAndGenerateWinningNumbers(game);
-      
-    };
+ 
     
   
        

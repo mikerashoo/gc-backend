@@ -34,7 +34,7 @@ export const findUserByEmailPhoneOrUserName = async (
 
 export const findLoginUser = async (userNameInfo: string) => {
   try {
-    return await db.user.findFirst({
+    const user = await db.user.findFirst({
       where: {
         OR: [
           {
@@ -54,6 +54,8 @@ export const findLoginUser = async (userNameInfo: string) => {
         ],
       },
     });
+   
+    return user;
   } catch (err : any) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       // The .code property can be accessed in a type-safe manner

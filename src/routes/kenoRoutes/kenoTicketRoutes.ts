@@ -1,13 +1,16 @@
 import {  Router } from "express";      
-import { createTicket, getGameTickets,searchTIcketByKenoGameId } from "../../controllers/keno/KenoTicketController"; 
+import { createTicket, getGameTickets,searchTIcketByKenoGameId, getKenoTicketDetail, markKenoTicketAsPayed, getTodaysTickets } from "../../controllers/keno/KenoTicketController"; 
 import { validateData } from "../../middlewares/validationMiddleware";
-import { kenoTicketSchema } from "../../utils/schemas/kenoSchemas";
+import { createKenoTicketSchema } from "../../utils/schemas/kenoSchemas";
 const kenoTicketRoutes = Router({mergeParams: true});
 
 
-kenoTicketRoutes.post('/search',searchTIcketByKenoGameId );  
+kenoTicketRoutes.get('/search', searchTIcketByKenoGameId );  
+kenoTicketRoutes.get('/todays', getTodaysTickets );  
+kenoTicketRoutes.get('/detail/:ticketId',  getKenoTicketDetail);  
+kenoTicketRoutes.post('/mark-payed/:ticketId',  markKenoTicketAsPayed);  
  
-kenoTicketRoutes.post('/:gameId/',  validateData(kenoTicketSchema), createTicket);  
+kenoTicketRoutes.post('/:gameId/',  validateData(createKenoTicketSchema), createTicket);  
 kenoTicketRoutes.get('/:gameId/', getGameTickets);  
 
 
