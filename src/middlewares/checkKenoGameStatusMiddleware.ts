@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import db from "../lib/db";
 import { kenoGameConstants, kenoPayouts } from "../utils/constants/kenoGameConstants";
-import { TicketStatus } from "@prisma/client";
+import { GameStatus, GameType, TicketStatus } from "@prisma/client";
 
 // Helper function to generate unique random numbers and sort them
 function generateUniqueRandomNumbers(
@@ -17,81 +17,101 @@ function generateUniqueRandomNumbers(
   return Array.from(numbers); // Sort the numbers before returning
 }
 
-
 const getPayoutMultiplierForSelection = (
-    selectionCount: number,
-    hitCount: number
-  ) => {
-    const payout = kenoPayouts[selectionCount - 1];
-    if (!payout) return 0;
-    const index = payout.hits.indexOf(hitCount);
-    return index !== -1 ? payout.pays[index] : 0;
-  };
-  
+  selectionCount: number,
+  hitCount: number
+) => {
+  const payout = kenoPayouts[selectionCount - 1];
+  if (!payout) return 0;
+  const index = payout.hits.indexOf(hitCount);
+  return index !== -1 ? payout.pays[index] : 0;
+};
 
 // Middleware to check and update game and ticket statuses
 const checkGameStatusMiddleware = async (
-  req: Request,
-  res: Response,
+  req: any,
+  res: any,
   next: NextFunction
 ) => {
   const now = new Date();
 
   try {
-    // Update KenoGame status and winning numbers
-    await db.kenoGame.updateMany({
+    // Update KenoGame with status NOT_STARTED and ticketWillBeDisabledAt has passed
+    const kenoToPlayGames = await db.game.findMany({
       where: {
-        ticketWillBeDisabledAt: { lte: now },
-        status: "NOT_STARTED",
+        gameType: GameType.KENO,
+        keno: {
+          ticketWillBeDisabledAt: { lte: now },
+        },
+        status: GameStatus.NOT_STARTED,
       },
-      data: {
-        status: "ON_PLAY",
-        winningNumbers: generateUniqueRandomNumbers(kenoGameConstants.numberOfWinningNumbersToGenerate, kenoGameConstants.startNumber, kenoGameConstants.endNumber), // Example: 20 unique numbers between 1 and 80
+      include: {
+        keno: true,
       },
     });
+
+    for (const kenoGame of kenoToPlayGames) {
+      const winningNumbers = generateUniqueRandomNumbers(
+        kenoGameConstants.numberOfWinningNumbersPerGame,
+        kenoGameConstants.startNumber,
+        kenoGameConstants.endNumber
+      );
+      await db.kenoGame.update({
+        where: {
+          id: kenoGame.keno.id,
+        },
+        data: {
+          winningNumbers,
+        },
+      });
+
+      await db.game.update({
+        where: {
+          id: kenoGame.id,
+        },
+        data: {
+          status: GameStatus.ON_PLAY,
+        },
+      });
+    }
+
     console.log(
       "KenoGame status updated to ON_PLAY and winning numbers generated"
     );
 
-    // Update KenoGame status to DONE
-    await db.kenoGame.updateMany({
+    // Update KenoGame with status not DONE and endAt has passed
+    const kenoToEndGames = await db.game.findMany({
       where: {
-        endAt: { lte: now },
-        status: { not: "DONE" },
-      },
-      data: {
-        status: "DONE",
-      },
-    });
-    console.log("KenoGame status updated to DONE");
-
-    // Update Ticket and TicketSelection statuses and winAmount
-    const completedGames = await db.kenoGame.findMany({
-      where: {
-        endAt: { lte: now },
-        status: "DONE",
+        gameType: GameType.KENO,
+        endAt: { lt: now },
+        status: { not: GameStatus.DONE },
       },
       include: {
+        keno: true,
         tickets: {
           where: {
-            status: "ON_PLAY",
+            status: TicketStatus.ON_PLAY,
           },
           include: {
-            selections: true,
+            kenoTicket: {
+              include: {
+                selections: true,
+              },
+            },
           },
         },
       },
     });
 
-    for (const game of completedGames) {
-      // Added logic to run only ON_PLAY tickets
+    for (const game of kenoToEndGames) {
+      const winningNumbers = game.keno.winningNumbers;
       for (const ticket of game.tickets) {
         let ticketWinAmount = 0;
         let ticketStatus = false;
 
-        for (const selection of ticket.selections) {
+        for (const selection of ticket.kenoTicket.selections) {
           const hitCount = selection.selectedNumbers.filter((num) =>
-            game.winningNumbers.includes(num)
+            winningNumbers.includes(num)
           ).length;
           const selectionCount = selection.selectedNumbers.length;
 
@@ -101,15 +121,11 @@ const checkGameStatusMiddleware = async (
           );
           const selectionWinAmount = oddAmount * selection.betAmount;
 
-          console.log(
-            `Selection: ${selection.id}, Selected Numbers: ${selection.selectedNumbers}, Hit Count: ${hitCount}, Odd Amount: ${oddAmount}, Selection Win Amount: ${selectionWinAmount}`
-          );
-
           await db.ticketSelection.update({
             where: { id: selection.id },
             data: {
               winAmount: selectionWinAmount,
-              status: selectionWinAmount > 0 ? "WIN" : "LOSE",
+              status: selectionWinAmount > 0 ? TicketStatus.WIN : TicketStatus.LOSE,
             },
           });
 
@@ -123,11 +139,21 @@ const checkGameStatusMiddleware = async (
           where: { id: ticket.id },
           data: {
             winAmount: ticketWinAmount,
-            status: ticketStatus ? "WIN" : "LOSE",
+            status: ticketStatus ? TicketStatus.WIN : TicketStatus.LOSE,
           },
         });
       }
+
+      await db.game.update({
+        where: {
+          id: game.id,
+        },
+        data: {
+          status: GameStatus.DONE,
+        },
+      });
     }
+
     console.log("Ticket and TicketSelection statuses and winAmount updated");
   } catch (error) {
     console.error("Error updating game or ticket statuses:", error);

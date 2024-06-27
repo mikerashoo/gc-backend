@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { findProviderWithNameOrIdentifier } from "../../../services/admin/provider-services";
 import db from "../../../lib/db";
 
-export const getProviders = async (req: Request, res: Response) => {
+export const getProviders = async (req: any, res: any) => {
   try {
     const providers = await db.provider.findMany({});
 
@@ -13,7 +13,7 @@ export const getProviders = async (req: Request, res: Response) => {
   }
 };
 
-export const addProvider = async (req: Request, res: Response) => {
+export const addProvider = async (req: any, res: any) => {
   try {
     const { name, address, identifier } = req.body;
 
@@ -41,8 +41,8 @@ export const addProvider = async (req: Request, res: Response) => {
 };
 
 export const getProviderDetailByIdentifier = async (
-  req: Request,
-  res: Response
+  req: any,
+  res: any
 ) => {
   try {
     const identifier  = req.query.identifier.toString();

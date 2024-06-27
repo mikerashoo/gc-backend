@@ -1,7 +1,7 @@
 import { Request, Response } from "express"; 
 import db from "../lib/db";
 
-export const getUsers = async (req: Request, res: Response) => {
+export const getUsers = async (req: any, res: any) => {
   try {
      
     const users = await db.user.findMany({});

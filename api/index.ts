@@ -1,13 +1,17 @@
  
 import express = require('express'); 
-const { notFound, errorHandler, isAuthenticated } = require('../src/middlewares/authMiddleware'); 
+require('dotenv').config();
 
-import db from '../src/lib/db';
+const { notFound, errorHandler, isAuthenticated } = require('../src/middlewares/authMiddleware'); 
+const { isVerifiedCashier  } = require('../src/middlewares/isVerifiedCashierMiddleware'); 
+
 import authRoutes from '../src/routes/authRoutes';
 import adminRoutes from '../src/routes/adminRoutes';
 import cashierRoutes from '../src/routes/cashierRoutes';
-import kenoRoutes from '../src/routes/kenoRoutes';
-import providerRoutes from '../src/routes/providerRoutes';
+// import kenoRoutes from '../src/routes/games/kenoRoutes';
+import providerRoutes from '../src/routes/providerRoutes';  
+// import gamePlayRoutes from '../src/routes/games';
+
  
 const cors = require('cors');
 const app = express();  
@@ -19,11 +23,11 @@ app.use(cors({
 }));
 
 app.use(express.json());  
-app.use('/keno', isAuthenticated, kenoRoutes);
+app.use('/cashier', isAuthenticated, isVerifiedCashier, cashierRoutes);   
+
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 app.use('/provider/:providerId', providerRoutes);  
-app.use('/cashier', cashierRoutes);  
  
 
 app.get("/", (req, res) => res.send("Express on Vercel"));
@@ -32,7 +36,7 @@ app.get("/", (req, res) => res.send("Express on Vercel"));
 //     res.json(users);
 //   });
 app.get('/test', (req, res) => {
-  res.json({ message: 'API is working' });
+  res.json({ message: process.env.JWT_ACCESS_SECRET });
 });
 
 app.use(notFound);

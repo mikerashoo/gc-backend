@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import db from "../../lib/db";
 
 
-export const getProviderBranches = async (req: Request, res: Response) => {
+export const getProviderBranches = async (req: any, res: any) => {
   try {
     const providerId = req.params.providerId;
 
@@ -22,7 +22,7 @@ export const getProviderBranches = async (req: Request, res: Response) => {
 
 
 
-export const addBranch = async (req: Request, res: Response) => {
+export const addBranch = async (req: any, res: any) => {
   try {
     const providerId = req.params.providerId;
 
@@ -56,9 +56,9 @@ export const addBranch = async (req: Request, res: Response) => {
   }
 };
 
-export const getBranchDetail = async (req: Request, res: Response) => {
+export const getBranchDetail = async (req: any, res: any) => {
   try {
-    const branchId = req.params.branchId;
+    const branchId = req.payload.branchId;
 
     const branch = await db.branch.findUnique({
       where: {

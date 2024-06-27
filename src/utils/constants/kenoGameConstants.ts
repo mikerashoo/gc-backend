@@ -1,4 +1,4 @@
-import { IKenoPayout, IKenoPayoutTable } from "../types/keno"
+import { IKenoGameConfigurations, IKenoPayout, IKenoPayoutTable } from "../shared-types/keno"
 
 
 export const kenoPayouts : IKenoPayout[] = [                
@@ -13,20 +13,42 @@ export const kenoPayouts : IKenoPayout[] = [
     {hits: [9,8,7,6,5,4],     pays: [4200,1800,120,18,6,3],        },  //PAYOUTS FOR 9 NUMBERS
     {hits: [10,9,8,7,6,5,4],  pays: [5000,2500,400,40,12,4,2],   },  //PAYOUTS FOR 10 NUMBERS
 ]
- 
 
-export const kenoGameConstants = {
+const numberOfWinningNumbersPerGame = 20;
+const secondsToDisplaySingleWinningNumber = 3;
+const totalTimeForShowingWinningTickets = numberOfWinningNumbersPerGame * secondsToDisplaySingleWinningNumber;
+
+const secondsBeforeStartingGame = 5;
+
+const totalGameWaitTimeInSeconds = secondsBeforeStartingGame + 180;
+
+const secondsBeforeShowingWinningNumbers = 2;
+
+const totalSecondsBeforeShowingWinningNumber = totalGameWaitTimeInSeconds + secondsBeforeShowingWinningNumbers;
+
+const totalGameTimeInSeconds = totalSecondsBeforeShowingWinningNumber  + totalTimeForShowingWinningTickets;
+
+export const kenoGameConstants: IKenoGameConfigurations = {
     startNumber: 1,
     endNumber: 80,
-    numberOfWinningNumbersToGenerate: 20, 
+
     minBetAmount: 20,
     maxBetAmount: 5000, 
-    minNumberOfTicketsToSelect: 2,
-    maxNumberOfTicketsToSelect: 10, 
-    disableTicketBeforeGeneratingTimeInSeconds: 5,
-    totalTimeBeforeGeneratingWinningNumbersInSeconds: 90,
-    singleWinningNumberShowTimeInSeconds: 2,
-    payoutTable: kenoPayouts
+
+    minNumbersCountPerSlip: 2,
+    maxNumbersCountPerSlip: 10, 
+
+    numberOfWinningNumbersPerGame, 
+    secondsToDisplaySingleWinningNumber,
+
+    secondsBeforeStartingGame,
+    secondsBeforeShowingWinningNumbers,
+    
+    totalSecondsBeforeShowingWinningNumber,
+    totalGameWaitTimeInSeconds,
+    totalGameTimeInSeconds,
+
+    kenoPayoutMultiplier: kenoPayouts
 }
 
 

@@ -1,2 +1,2 @@
 -- AlterEnum
-ALTER TYPE "TicketStatus" ADD VALUE 'PAYED';
+ALTER TYPE "TicketStatus" ADD VALUE 'PAID';

@@ -7,9 +7,9 @@ import db from "../../lib/db";
 
  
 
-export const registerCashierToBranch = async (req: Request, res: Response) => {
+export const registerCashierToBranch = async (req: any, res: any) => {
   try {
-    const branchId = req.params.branchId;
+    const branchId = req.payload.branchId;
 
     const { fullName, email, userName, phoneNumber, password } = req.body;
 
@@ -32,28 +32,20 @@ export const registerCashierToBranch = async (req: Request, res: Response) => {
   
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const cashier = await db.user.create({
+    const cashier = await db.cashier.create({
       data: {
-        fullName,
-        email,
-        userName,
-        phoneNumber,
-        role: UserRole.CASHIER,
+        fullName, 
+        phoneNumber, 
         password: hashedPassword,
-        
+        branchId, 
+        userName,
       },
     });
 
     delete cashier.password;
+ 
 
-    const cashierAccount = await db.cashierAccount.create({
-      data: {
-        branchId,
-        userId: cashier.id
-      },
-    });  
-
-    return res.status(200).json({...cashier,  cashierAccount});
+    return res.status(200).json({cashier});
   } catch (error) {
     console.error("Error fetching branches", error);
     return res.status(500).json({ error: "Failed to fetch branches" });

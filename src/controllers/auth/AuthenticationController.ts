@@ -1,20 +1,18 @@
 import { Request, Response } from "express";
 
-import { v4 as uuidv4 } from "uuid"; 
+import { v4 as uuidv4 } from "uuid";
 import bcrypt = require("bcrypt");
 import {
   addRefreshTokenToWhitelist,
   deleteRefreshToken,
   findLoginUser,
-  findRefreshTokenById, 
+  findRefreshTokenById,
 } from "../../services/user-services";
 import { findUserById } from "../../services/user-services"; 
-import { UserRole } from "@prisma/client";
-import db from "../../lib/db";
 import { hashToken } from "../../lib/hashToken";
 import { generateTokens, verifyJwt } from "../../lib/jwt";
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: any, res: any) => {
   try {
     const { userName, password } = req.body;
 
@@ -23,118 +21,46 @@ export const login = async (req: Request, res: Response) => {
         .status(400)
         .json({ error: "You must provide an userName and a password." });
     }
- 
+
     const existingUser = await findLoginUser(userName);
 
     if (!existingUser) {
-      return res.status(403).json({ error: "Invalid login credentials." });
+      return res.status(403).json({ error: "Invalid login credentials. User Not Found" });
     }
 
     const validPassword = await bcrypt.compare(password, existingUser.password);
     if (!validPassword) {
-      return res.status(403).json({ error: "Invalid login credentials." });
+      return res.status(403).json({ error: "Invalid login credentials. Incorrect credientials" });
     }
 
     const jti = uuidv4();
-    const { accessToken, refreshToken, accessTokenExpires } = generateTokens(existingUser, jti);
-    
+    const { accessToken, refreshToken, accessTokenExpires } = generateTokens(
+      existingUser,
+      jti
+    );
+
     await addRefreshTokenToWhitelist({
       jti,
       refreshToken,
       userId: existingUser.id,
+      cashierId: null
     });
 
     delete existingUser.password;
+    const userROle = existingUser.role; 
     return res.status(201).json({
       ...existingUser,
       accessToken,
       refreshToken,
-      accessTokenExpires
+      accessTokenExpires,
     });
   } catch (error) {
     console.error("Error logging", error);
     return res.status(500).json({ error });
   }
-};
+}; 
 
-
-export const cashierLogin = async (req: Request, res: Response) => {
-  try { 
-    const { userName, password,   branchIdentifier } = req.body;
-
-    if (!userName || !password) {
-      return res
-        .status(400)
-        .json({ error: "You must provide an userName and a password." });
-    }
- 
-    if (!branchIdentifier) {
-      return res
-        .status(400)
-        .json({ error: "You must provide branch unique identifier." });
-    }
- 
-    const existingUser = await findLoginUser(userName);
-
-    if (!existingUser) {
-      return res.status(403).json({ error: "Invalid login credentials." });
-    }
-
-    const validPassword = await bcrypt.compare(password, existingUser.password);
-    if (!validPassword) {
-      return res.status(403).json({ error: "Invalid login credentials." });
-    }
-
-    if (existingUser.role != UserRole.CASHIER) {
-      return res.status(403).json({ error: "Invalid user role. User is not cashier" });
-    }
-
-    const cashierAccount  = await db.cashierAccount.findFirst({
-      where: {
-        userId: existingUser.id,
-        branch: {
-          identifier: branchIdentifier
-        }
-      },
-      include: {
-        branch: true,
-        profile: true
-      }
-    })
- 
-    if(!cashierAccount){
-      return res.status(403).json({ error: "Invalid branch identifier" });
-    }
-
-    delete existingUser.password;
-    const user = {
-      ...existingUser,
-      account: cashierAccount,
-    }
-
-    const jti = uuidv4();
-    const { accessToken, refreshToken, accessTokenExpires } = generateTokens(user, jti);
-    
-    await addRefreshTokenToWhitelist({
-      jti,
-      refreshToken,
-      userId: existingUser.id,
-    });
-
-    delete cashierAccount.profile.password; 
-    return res.status(201).json({
-      ...cashierAccount, 
-      accessToken,
-      refreshToken,
-      accessTokenExpires
-    });
-  } catch (error) {
-    console.error("Error logging", error);
-    return res.status(500).json({ error });
-  }
-};
-
-export const getRefreshToken = async (req: Request, res: Response) => {
+export const getRefreshToken = async (req: any, res: any) => {
   try {
     const { refreshToken } = req.body;
     if (!refreshToken) {
@@ -159,20 +85,22 @@ export const getRefreshToken = async (req: Request, res: Response) => {
 
     await deleteRefreshToken(savedRefreshToken.id);
     const jti = uuidv4();
-    const { accessToken, refreshToken: newRefreshToken, accessTokenExpires } = generateTokens(
-      user,
-      jti
-    );
+    const {
+      accessToken,
+      refreshToken: newRefreshToken,
+      accessTokenExpires,
+    } = generateTokens(user, jti);
     await addRefreshTokenToWhitelist({
       jti,
       refreshToken: newRefreshToken,
       userId: user.id,
+      cashierId: null
     });
 
     res.json({
       accessToken,
       refreshToken: newRefreshToken,
-      accessTokenExpires
+      accessTokenExpires,
     });
   } catch (error) {
     console.error("Error getting refresh token", error);

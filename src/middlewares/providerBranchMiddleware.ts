@@ -18,7 +18,7 @@ export async function isValidBranch(req, res, next) {
 
   // Check if the user is an admin of the specified provider
   const providerId = req.params.providerId; // Assuming the providerId is in the request params
-  const branchId = req.params.branchId; // Assuming the providerId is in the request params 
+  const branchId = req.payload.branchId; // Assuming the providerId is in the request params 
   
 
   const validBranch = await db.branch.findUnique({

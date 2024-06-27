@@ -3,7 +3,7 @@ import { registerProviderAdmin } from "../../../services/admin/provider-services
 import { UserRole } from "@prisma/client";
 import db from "../../../lib/db";
 
-export const getProviderAdmins = async (req: Request, res: Response) => {
+export const getProviderAdmins = async (req: any, res: any) => {
   try {
     const users = await db.user.findMany({
       where: {
@@ -25,7 +25,7 @@ export const getProviderAdmins = async (req: Request, res: Response) => {
   }
 };
 
-export const addProviderAdmin = async (req: Request, res: Response) => {
+export const addProviderAdmin = async (req: any, res: any) => {
   try {
 
     
@@ -44,7 +44,7 @@ export const addProviderAdmin = async (req: Request, res: Response) => {
 
 };
 
-export const updateProviderAdmin = async (req: Request, res: Response) => {
+export const updateProviderAdmin = async (req: any, res: any) => {
   try {
 
     

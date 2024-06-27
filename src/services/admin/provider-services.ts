@@ -3,7 +3,7 @@ import bcrypt = require("bcrypt");
 import { findUserByEmailPhoneOrUserName } from "../user-services";
 import { Provider, UserRole } from "@prisma/client";
 import db from "../../lib/db";
-import { hashToken } from "../../lib/hashToken";
+import { hashToken } from "../../lib/hashToken"; 
 import { PrismaCallResponse } from "../../utils/types/prismaCallResponse";
 
 

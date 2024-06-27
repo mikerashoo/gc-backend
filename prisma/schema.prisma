@@ -38,34 +38,46 @@ model User {
   password    String
 
   role            UserRole
-  status          ActiveStatus   @default(ACTIVE)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  status          ActiveStatus     @default(ACTIVE)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
   refreshTokens   RefreshToken[]
   providers       Provider[] 
-  cashierAccounts         CashierAccount[]
 }
 
-model CashierAccount {
-  id          String   @id @unique @default(uuid())
-  userId String @unique
-  branchId String 
-  profile  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  branch  Branch     @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  tickets         Ticket[]
-  ticketPayments         TicketPayment[]
+model Cashier {
+  id             String          @id @unique @default(uuid())
+   fullName String 
+  userName    String? @unique
+  phoneNumber String  
+  password    String
+
+    status          ActiveStatus     @default(ACTIVE)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  branchId       String  
+  branch         Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  tickets        Ticket[] 
+  cancelledTickets        Ticket[] @relation(name: "cancelledTickets")
+  ticketPayments TicketPayment[]
+  refreshTokens   RefreshToken[]
 
 }
 
 model RefreshToken {
   id          String   @id @unique @default(uuid())
   hashedToken String
-  userId      String
-  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String?
+  User        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+   cashierId      String?
+  Cashier        Cashier?     @relation(fields: [cashierId], references: [id], onDelete: Cascade)
+
   revoked     Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+ 
 
 // providers
 model Provider {
@@ -89,93 +101,142 @@ model Branch {
   address    String
   providerId String
 
-  status    ActiveStatus @default(ACTIVE)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  provider  Provider     @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  cashiers  CashierAccount[] 
-  kenoGames KenoGame[]
+  status    ActiveStatus     @default(ACTIVE)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  provider  Provider         @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  cashiers  Cashier[]
+  games     Game[]
 }
 
 // Keno Game
-enum KenoGameStatus {
+enum GameStatus {
   NOT_STARTED
   ON_PLAY
   DONE
+}
+
+// Keno Game
+enum GameType {
+  KENO
+  DOG_RACING
+  HORSE_RASING
 }
 
 enum TicketStatus {
   ON_PLAY
   WIN
   LOSE
-  PAYED
+  PAID
+  CANCELLED
 }
-
 
 enum TicketSelectionStatus {
   ON_PLAY
   WIN
-  LOSE 
+  LOSE
+  PAID
 }
- 
-model KenoGame {
-  id         String @id @default(cuid())
-  kenoGameId String
 
-  status         KenoGameStatus @default(NOT_STARTED) // "scheduled", "running", "completed"
-  branchId       String
-  winningNumbers Int[] // New field to store winning numbers as a comma-separated string
+// Base Game model
+model Game {
+  id       String     @id @default(cuid())
+  uniqueId String
+  branchId String
+  gameType GameType
+  startAt  DateTime
+  endAt    DateTime
+  status   GameStatus @default(NOT_STARTED)
 
-  startAt                        DateTime
-  ticketWillBeDisabledAt         DateTime
-  winningNumberWillBeGeneratedAt DateTime
-  endAt                          DateTime
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  tickets Ticket[]
-  branch  Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  branch    Branch         @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  tickets   Ticket[]
+  keno      KenoGame?
+  dogRacing DogRacingGame? // Add other game relations here
 }
 
 model Ticket {
-  id           String       @id @default(cuid())
-  kenoTicketId String
-  gameId       String
-  cashierId    String 
+  id                String       @id @default(cuid())
+  uniqueId          String
   totalBetAmount    Float?
-  possibleWinAmount    Float?
-  winAmount    Float?       @default(0.0)
-  status       TicketStatus @default(ON_PLAY)
-  createdAt    DateTime     @default(now())
+  possibleWinAmount Float?
+  winAmount         Float?       @default(0.0)
+  status            TicketStatus @default(ON_PLAY)
+  createdAt         DateTime     @default(now())
 
-  game    KenoGame @relation(fields: [gameId], references: [id])
-  cashier CashierAccount     @relation(fields: [cashierId], references: [id])
-  payment TicketPayment?
-  selections TicketSelection[]
+  gameId            String
+  game            Game             @relation(fields: [gameId], references: [id])
+
+  cashierId         String
+  cashier         Cashier   @relation(fields: [cashierId], references: [id]) 
+
+
+  cancelledAt         DateTime? 
+  cancelledCashierId         String?
+  cancelledBy         Cashier?   @relation(name: "cancelledTickets", fields: [cancelledCashierId], references: [id]) 
+
+
+  kenoTicket      KenoTicket?
+  dogRacingTicket DogRacingTicket? // Add other game ticket relations here
+  payment         TicketPayment?
 }
 
+model KenoGame {
+  id                             String   @id @default(cuid())
+  gameId                         String   @unique
+  winningNumbers                 Int[]
+  ticketWillBeDisabledAt         DateTime
+  winningNumberWillBeShowedAt DateTime 
 
+  game Game @relation(fields: [gameId], references: [id])
+}
+
+model DogRacingGame {
+  id                             String   @id @default(cuid())
+  gameId                         String   @unique 
+  ticketWillBeDisabledAt         DateTime  
+
+  game Game @relation(fields: [gameId], references: [id])
+}
+
+model KenoTicket {
+  id         String            @id @default(cuid())
+  ticketId   String            @unique
+  selections TicketSelection[]
+
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+}
+
+model DogRacingTicket {
+  id       String @id @default(cuid())
+  ticketId String @unique
+  // Add specific fields for AnotherGameTicket
+
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+}
 
 model TicketSelection {
-  id           String       @id @default(cuid())
-  ticketId String 
-  selectedNumbers      Int[] 
-  betAmount    Float
-  possibleWinAmount    Float?      
-  winAmount    Float?      
-  status       TicketSelectionStatus @default(ON_PLAY)
-  ticket    Ticket @relation(fields: [ticketId], references: [id]) 
+  id                String                @id @default(cuid())
+  ticketId          String
+  selectedNumbers   Int[]
+  betAmount         Float
+  possibleWinAmount Float?
+  winAmount         Float? 
+  status            TicketStatus @default(ON_PLAY)
+
+  ticket            KenoTicket            @relation(fields: [ticketId], references: [id])
 }
 
 model TicketPayment {
-  id           String       @id @default(cuid())
-  ticketId String @unique
-  cashierId    String 
-  payedAmount    Float?       @default(0.0)
-  status       TicketStatus @default(ON_PLAY)
-  createdAt    DateTime     @default(now())
+  id          String       @id @default(cuid())
+  ticketId    String       @unique
+  cashierId   String
+  paidAmount Float?       @default(0.0) 
+  createdAt   DateTime     @default(now())
 
-  ticket    Ticket @relation(fields: [ticketId], references: [id])
-  cashier CashierAccount     @relation(fields: [cashierId], references: [id])
+  ticket  Ticket         @relation(fields: [ticketId], references: [id])
+  cashier Cashier @relation(fields: [cashierId], references: [id])
 }

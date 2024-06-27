@@ -30,6 +30,9 @@ export const userLoginSchema = z.object({
 
 
 
-export const cashierLoginSchema = userLoginSchema.extend({
-  branchIdentifier: z.string(), 
+export const cashierLoginSchema = z.object({
+  userName: z.string().min(1, {
+    message: "Username or phone number required"
+  }),
+password: z.string().min(8),
 })

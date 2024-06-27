@@ -1,3 +1,4 @@
+ 
 const jwt = require('jsonwebtoken');
 
 // Usually I keep the token between 5 minutes - 15 minutes
@@ -6,6 +7,8 @@ function generateAccessToken(user) {
     expiresIn: '30d',
   });
 }
+ 
+
 
 // I choosed 8h because i prefer to make the user login again each day.
 // But keep him logged in if he is using the app.
@@ -42,6 +45,8 @@ const accessTokenExpires =  Date.now() + daysToExpire;
     accessTokenExpires,
   };
 }
+
+
 
 export {
   generateAccessToken,

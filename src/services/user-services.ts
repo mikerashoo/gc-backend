@@ -1,8 +1,8 @@
-import bcrypt = require("bcrypt"); 
+import bcrypt = require("bcrypt");
 import { Prisma, User, UserRole } from "@prisma/client";
-import db from "../lib/db";
-import { PrismaCallResponse } from "../utils/types/prismaCallResponse";
+import db from "../lib/db"; 
 import { hashToken } from "../lib/hashToken";
+import { PrismaCallResponse } from "../utils/types/prismaCallResponse";
 
 export const findUserById = async (id: string) => {
   try {
@@ -11,7 +11,7 @@ export const findUserById = async (id: string) => {
         id,
       },
     });
-  } catch (err : any) {
+  } catch (err: any) {
     throw err;
   }
 };
@@ -27,10 +27,10 @@ export const findUserByEmailPhoneOrUserName = async (
         OR: [{ phoneNumber }, { email }, { userName }],
       },
     });
-  } catch (err : any) {
+  } catch (err: any) {
     throw err;
   }
-}; 
+};
 
 export const findLoginUser = async (userNameInfo: string) => {
   try {
@@ -43,26 +43,30 @@ export const findLoginUser = async (userNameInfo: string) => {
               mode: "insensitive",
             },
           },
-          { email: {
-            equals: userNameInfo,
-            mode: "insensitive",
-          } },
-          { userName: {
-            equals: userNameInfo,
-            mode: "insensitive",
-          } },
+          {
+            email: {
+              equals: userNameInfo,
+              mode: "insensitive",
+            },
+          },
+          {
+            userName: {
+              equals: userNameInfo,
+              mode: "insensitive",
+            },
+          },
         ],
       },
+      
     });
-   
+
     return user;
-  } catch (err : any) {
+  } catch (err: any) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       // The .code property can be accessed in a type-safe manner
-     throw new Error(err.message)
-    
+      throw new Error(err.message);
     }
-    throw err 
+    throw err;
   }
 };
 
@@ -73,10 +77,10 @@ export const findUserByEmail = async (email: string) => {
         email: {
           equals: email,
           mode: "insensitive",
-        }
+        },
       },
     });
-  } catch (err : any) {
+  } catch (err: any) {
     throw err;
   }
 };
@@ -92,11 +96,10 @@ export const findUserByPhoneNumber = async (phoneNumber: string) => {
         phoneNumber: {
           in: [zeroFormat, plusFormat],
           mode: "insensitive",
-
         },
       },
     });
-  } catch (err : any) {
+  } catch (err: any) {
     throw err;
   }
 };
@@ -108,10 +111,10 @@ export const findUserByUserName = async (userName: string) => {
         userName: {
           equals: userName,
           mode: "insensitive",
-        }
+        },
       },
     });
-  } catch (err : any) {
+  } catch (err: any) {
     throw err;
   }
 };
@@ -170,7 +173,7 @@ export const registerUser = async (
       status: true,
       response: user,
     };
-  } catch (err : any) {
+  } catch (err: any) {
     throw err;
   }
 };
@@ -179,15 +182,19 @@ export const addRefreshTokenToWhitelist = async ({
   jti,
   refreshToken,
   userId,
+  cashierId,
 }) => {
   return await db.refreshToken.create({
     data: {
       id: jti,
       hashedToken: hashToken(refreshToken),
       userId,
+      cashierId
     },
   });
 };
+
+
 
 export function findRefreshTokenById(id) {
   return db.refreshToken.findUnique({
@@ -217,4 +224,10 @@ export function revokeTokens(userId) {
       revoked: true,
     },
   });
+}
+
+
+export async function validatePassword(dbPassword: string, newPassword): Promise<boolean> {
+  return  await bcrypt.compare(newPassword, dbPassword);
+   
 }

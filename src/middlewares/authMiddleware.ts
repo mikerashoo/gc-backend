@@ -39,9 +39,11 @@ function isAuthenticated(req, res, next) {
 
   return next();
 }
+
+ 
  
 module.exports = {
   notFound,
   errorHandler,
-  isAuthenticated
+  isAuthenticated, 
 };

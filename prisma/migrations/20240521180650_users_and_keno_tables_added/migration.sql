@@ -85,7 +85,7 @@ CREATE TABLE "KenoGame" (
 -- CreateTable
 CREATE TABLE "Ticket" (
     "id" TEXT NOT NULL,
-    "kenoTicketId" TEXT NOT NULL,
+    "uniqueId" TEXT NOT NULL,
     "gameId" TEXT NOT NULL,
     "cashierId" TEXT NOT NULL,
     "numbers" INTEGER[],
