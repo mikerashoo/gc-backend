@@ -124,7 +124,7 @@ export const registerUser = async (
   role: UserRole
 ): Promise<PrismaCallResponse> => {
   try {
-    const { fullName, email, userName, phoneNumber, password } = data;
+    const { firstName, lastName, email, userName, phoneNumber, password } = data;
     let error = null;
 
     const userExists = await findUserByEmailPhoneOrUserName(
@@ -160,7 +160,8 @@ export const registerUser = async (
 
     const user = await db.user.create({
       data: {
-        fullName,
+        firstName,
+        lastName,
         email,
         userName,
         phoneNumber,

@@ -7,6 +7,11 @@ export enum UserRole {
   CASHIER = "CASHIER",
 }
 
+export enum ProviderUserRole {
+  SUPER_ADMIN = "SUPER_ADMIN",
+  ADMIN = "ADMIN",
+}
+
 export enum ActiveStatus {
   ACTIVE = "ACTIVE",
   IN_ACTIVE = "IN_ACTIVE",

@@ -1,7 +1,7 @@
 import {  Router } from "express";      
 import { getProviders, addProvider, getProviderDetailByIdentifier } from "../../../controllers/admin/provider/ProviderCrudController";
-import { validateData } from "../../../middlewares/validationMiddleware";
-import { providerCreateSchema } from "../../../utils/schemas/providerSchema";
+import { validateData } from "../../../middlewares/validationMiddleware"; 
+import { providerCreateSchema } from "../../../utils/shared/schemas/provider/provider-information-crud-shema";
 const providerCrudRoutes = Router();  
 
 // Game

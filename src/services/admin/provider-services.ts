@@ -5,21 +5,16 @@ import { Provider, UserRole } from "@prisma/client";
 import db from "../../lib/db";
 import { hashToken } from "../../lib/hashToken"; 
 import { PrismaCallResponse } from "../../utils/types/prismaCallResponse";
+import { IProviderUserRegistrationSchema } from "../../utils/shared/schemas/provider/provider-users-schema";
 
 
-export const findProviderWithNameOrIdentifier = async (identifier: string, name: string) : Promise<Provider> => {
+export const findProviderWithIdentifier = async (identifier: string) : Promise<Provider> => {
   try {
     return await db.provider.findFirst({
-      where: {
-      OR: [
-        { identifier: {
+      where: { identifier: {
           equals: identifier,
           mode: "insensitive",
-        } }, { name: {
-          equals: name,
-          mode: "insensitive",
-        } } 
-      ]
+      }
       },
     });
  
@@ -118,7 +113,7 @@ export const registerProviderAdmin = async (
   data: any, 
 ): Promise<PrismaCallResponse> => {
   try {
-    const { fullName, email, userName, phoneNumber, password, providerId } = data;
+    const { firstName, lastName, email, userName, phoneNumber, password, providerId, role } = data as IProviderUserRegistrationSchema;
     let error = null;
  
     
@@ -132,24 +127,14 @@ export const registerProviderAdmin = async (
      
     }
  
-    const userExists = await findUserByEmailPhoneOrUserName(userName, phoneNumber, email);
-    if(userExists && userExists.email == email){
-      error = "Email already taken";
-      return {
-        status: false,
-        error,
-      };
-    }
+    const userExists = await db.providerAdmin.findFirst({
+      where: {
+       userName 
+      },
+    });
+    
 
-    if(userExists && userExists.phoneNumber == phoneNumber){
-      error = "Phone Number already taken";
-      return {
-        status: false,
-        error,
-      };
-    }
-
-    if(userExists && userExists.userName == userName){
+    if(userExists){
       error = "Username already taken";
       return {
         status: false,
@@ -161,19 +146,16 @@ export const registerProviderAdmin = async (
   
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await db.user.create({
+    const user = await db.providerAdmin.create({
       data: {
-        fullName,
+        firstName,
+        lastName,
         email,
         userName,
         phoneNumber,
-        role: UserRole.PROVIDER_ADMIN,
+        role,
         password: hashedPassword,
-        providers: {
-          connect: {
-            id: providerId
-          }
-        }
+        providerId: providerId
       },
     });
 

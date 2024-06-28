@@ -4,7 +4,7 @@ import db from "../../lib/db";
 import { addRefreshTokenToWhitelist, validatePassword } from "../../services/user-services";
 import { generateCashierTokens } from "../../lib/cashierJwt";
 import { v4 as uuidv4 } from "uuid";
-import { ICashierLoginData } from "../../utils/shared-types/userModels";
+import { ICashierLoginData } from "../../utils/shared/shared-types/userModels";
 
 
 export const cashierLogin = async (req: any, res: any) => {

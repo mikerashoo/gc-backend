@@ -1,6 +1,10 @@
-import { Request, Response } from "express"; 
-import { findProviderWithNameOrIdentifier } from "../../../services/admin/provider-services";
+import { Request, Response } from "express";
+import {
+  findProviderWithIdentifier, 
+} from "../../../services/admin/provider-services";
 import db from "../../../lib/db";
+import { IProviderCreateSchema } from "../../../utils/shared/schemas/provider/provider-information-crud-shema";
+import bcrypt = require("bcrypt");
 
 export const getProviders = async (req: any, res: any) => {
   try {
@@ -15,21 +19,33 @@ export const getProviders = async (req: any, res: any) => {
 
 export const addProvider = async (req: any, res: any) => {
   try {
-    const { name, address, identifier } = req.body;
+    const { name, address, identifier, email, firstName, lastName, userName, password, phoneNumber } =
+      req.body as IProviderCreateSchema; 
+      const isExists = await findProviderWithIdentifier(identifier);
+      if (isExists) {
+        return res
+          .status(403)
+          .json({ error: "Identifier is taken for provider" });
+      }
 
-    const isExists = await findProviderWithNameOrIdentifier(name, identifier);
-    if (isExists && isExists.name == name) {
-      return res.status(403).json({ error: "Provider with same name exists" });
-    }
+  let _password = await bcrypt.hash("jegna@bg", 10);
 
-    if (isExists && isExists.identifier == identifier) {
-      return res.status(403).json({ error: "Provider with same name exists" });
-    }
+     
     const provider = await db.provider.create({
       data: {
         name,
-        identifier,
         address,
+        identifier,
+        admins: {
+          create: {
+            firstName,
+            lastName,
+            email,
+            phoneNumber,
+            userName,
+            password: _password
+          }
+        }
       },
     });
 
@@ -40,24 +56,23 @@ export const addProvider = async (req: any, res: any) => {
   }
 };
 
-export const getProviderDetailByIdentifier = async (
-  req: any,
-  res: any
-) => {
+export const getProviderDetailByIdentifier = async (req: any, res: any) => {
   try {
-    const identifier  = req.query.identifier.toString();
+    const identifier = req.query.identifier.toString();
 
     const provider = await db.provider.findUnique({
       where: {
-         identifier 
+        identifier,
       },
       include: {
         admins: true,
       },
     });
 
-    if(!provider){
-      return res.status(403).json({ error: "Provider with identifier doesn't exist" });
+    if (!provider) {
+      return res
+        .status(403)
+        .json({ error: "Provider with identifier doesn't exist" });
     }
 
     return res.status(200).json(provider);

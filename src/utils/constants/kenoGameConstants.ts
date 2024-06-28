@@ -1,4 +1,4 @@
-import { IKenoGameConfigurations, IKenoPayout, IKenoPayoutTable } from "../shared-types/keno"
+import { IKenoGameConfigurations, IKenoPayout, IKenoPayoutTable } from "../shared/shared-types/keno"
 
 
 export const kenoPayouts : IKenoPayout[] = [                

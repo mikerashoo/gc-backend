@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 const prismaSchemaPath = path.join(__dirname, 'prisma/schema.prisma');
-const modelsOutputPath = path.join(__dirname, 'src/utils/shared-types/prisma-models.ts');
-const enumsOutputPath = path.join(__dirname, 'src/utils/shared-types/prisma-enums.ts');
+const modelsOutputPath = path.join(__dirname, 'src/utils/shared/shared-types/prisma-models.ts');
+const enumsOutputPath = path.join(__dirname, 'src/utils/shared/shared-types/prisma-enums.ts');
 
 const schemaContent = fs.readFileSync(prismaSchemaPath, 'utf-8');
 
@@ -113,3 +113,4 @@ fs.writeFileSync(modelsOutputPath, `// Auto-generated Prisma models\n\n${models}
 fs.writeFileSync(enumsOutputPath, `// Auto-generated Prisma enums\n\n${enums}`);
 
 console.log('Prisma models and enums have been generated successfully.');
+console.log('Running type error check  ----');

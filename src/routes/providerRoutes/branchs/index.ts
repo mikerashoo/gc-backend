@@ -3,7 +3,8 @@ import { getProviderBranches, addBranch, getBranchDetail } from "../../../contro
 import { validateData } from "../../../middlewares/validationMiddleware"; 
 import { isValidBranch } from "../../../middlewares/providerBranchMiddleware";  
 import branchManagementRoutes from "./branchManagementRoutes";
-import { branchCreateSchema } from "../../../utils/schemas/providerSchema";
+import { branchCreateSchema } from "../../../utils/shared/schemas/provider/branch-information-schema";
+ 
 const providerBranchRoutes = Router({mergeParams: true});
 
 

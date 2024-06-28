@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import db from "../../lib/db";
 import { kenoGameConstants } from "../../utils/constants/kenoGameConstants";
 import { GameType } from "@prisma/client";
-import { IKenoGameTimeConfigurations } from "../../utils/shared-types/keno";
+import { IKenoGameTimeConfigurations } from "../../utils/shared/shared-types/keno";
 import ShortUniqueId = require("short-unique-id");
 
 // Custom options for generating v4 UUIDs

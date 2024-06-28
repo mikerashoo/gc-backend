@@ -3,8 +3,8 @@ import db from "../../../lib/db";
 import { generateTicketId } from "../../../services/keno";
 import { ticketDetailInclude } from "../../../services/keno/ticketLogics";
 import { kenoGameConstants } from "../../../utils/constants/kenoGameConstants";
-import { IKenoTicketCreateData, ITicketPaymentSchema, ITicketIdSchema } from "../../../utils/schemas/kenoSchemas";
-import { ITicketWithDetail } from "../../../utils/shared-types/ticketModels";
+import { IKenoTicketCreateData, ITicketByIdSchema, ITicketPaymentSchema } from "../../../utils/shared/schemas/kenoSchemas";
+import { ITicketWithDetail } from "../../../utils/shared/shared-types/ticketModels";
 
 export const createTicket = async (req: any, res: any) => {
   try {
@@ -320,7 +320,7 @@ export const cancelTicket = async (req: any, res: any) => {
     const branchId = req.payload.branchId;
     const cashierId = req.payload.cashierId;
 
-    const { ticketId } = req.body as ITicketIdSchema;
+    const { ticketId } = req.body as ITicketByIdSchema;
 
     // Fetch ended games with associated tickets
     let ticketExits = await db.ticket.findUnique({

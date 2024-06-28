@@ -22,6 +22,11 @@ enum UserRole {
   CASHIER
 }
 
+enum ProviderUserRole {
+  SUPER_ADMIN
+  ADMIN 
+}
+
 // Users 
 enum ActiveStatus {
   ACTIVE
@@ -30,7 +35,8 @@ enum ActiveStatus {
 
 model User {
   id       String @id @default(cuid())
-  fullName String
+  firstName String
+  lastName String
 
   email       String? @unique
   userName    String? @unique
@@ -41,18 +47,17 @@ model User {
   status          ActiveStatus     @default(ACTIVE)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
-  refreshTokens   RefreshToken[]
-  providers       Provider[] 
+  refreshTokens   RefreshToken[] 
 }
 
 model Cashier {
   id             String          @id @unique @default(uuid())
-   fullName String 
+  firstName String 
+  lastName String 
   userName    String? @unique
   phoneNumber String  
   password    String
-
-    status          ActiveStatus     @default(ACTIVE)
+  status          ActiveStatus     @default(ACTIVE)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   branchId       String  
@@ -64,14 +69,34 @@ model Cashier {
 
 }
 
+model ProviderAdmin {
+  id             String          @id @unique @default(uuid())
+  firstName String 
+  lastName String 
+  userName    String? @unique
+  email String  
+  phoneNumber String  
+  password    String
+  role          ProviderUserRole     @default(SUPER_ADMIN)
+  status          ActiveStatus     @default(ACTIVE)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  providerId       String  
+  provider         Provider          @relation(fields: [providerId], references: [id], onDelete: Cascade) 
+  refreshTokens   RefreshToken[]
+}
+
 model RefreshToken {
   id          String   @id @unique @default(uuid())
   hashedToken String
   userId      String?
   User        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-   cashierId      String?
+  cashierId      String?
   Cashier        Cashier?     @relation(fields: [cashierId], references: [id], onDelete: Cascade)
+
+  providerAdminId      String?
+  providerAdmin        ProviderAdmin?     @relation(fields: [providerAdminId], references: [id], onDelete: Cascade)
 
   revoked     Boolean  @default(false)
   createdAt   DateTime @default(now())
@@ -89,7 +114,7 @@ model Provider {
   status    ActiveStatus @default(ACTIVE)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
-  admins    User[]
+  admins    ProviderAdmin[]
   branches  Branch[]
 }
 

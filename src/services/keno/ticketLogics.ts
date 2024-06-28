@@ -1,7 +1,7 @@
 import { GameType } from "@prisma/client";
 import db from "../../lib/db";
 import { kenoPayouts } from "../../utils/constants/kenoGameConstants"; 
-import { IKenoTicket } from "../../utils/shared-types/keno";
+import { IKenoTicket } from "../../utils/shared/shared-types/keno";
 
 export const ticketDetailInclude = {
   game: {

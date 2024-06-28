@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { registerProviderAdmin } from "../../../services/admin/provider-services";
 import { UserRole } from "@prisma/client";
 import db from "../../../lib/db";
+import { IProviderUserRegistrationSchema } from "../../../utils/shared/schemas/provider/provider-users-schema";
 
 export const getProviderAdmins = async (req: any, res: any) => {
   try {

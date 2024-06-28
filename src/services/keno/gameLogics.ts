@@ -1,7 +1,7 @@
 import { GameStatus, GameType } from "@prisma/client";
 import { generateUniqueIdForAGame, generateGameLogicTimes } from ".";
 import db from "../../lib/db";
-import { IKenoGame, IKenoGameForPlay, IKenoPreviousWinningNumbers } from "../../utils/shared-types/keno";
+import { IKenoGame, IKenoGameForPlay, IKenoPreviousWinningNumbers } from "../../utils/shared/shared-types/keno";
 // Get or create the current game based on existing criteria
 export async function getOrCreateCurrentKenoGame(
   branchId: string
@@ -131,7 +131,7 @@ export const getPreviousGameWinningNumbers = async (
 
     const gameWithTickets = games.map((game) => {
       return {
-        gameId: game.uniqueId.slice(game.uniqueId.length - 4),
+        gameId: game.uniqueId.slice(game.uniqueId.length - 5),
         winningNumbers: game.keno.winningNumbers.sort((a, b) => a - b),
       };
     });

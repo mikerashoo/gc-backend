@@ -1,5 +1,5 @@
 import { subDays, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { ICashierReport } from '../../utils/shared-types/gameModels';
+import { ICashierReport } from '../../utils/shared/shared-types/gameModels';
 import { TicketStatus } from '@prisma/client';
 import db from '../../lib/db';
 import { ticketDetailInclude } from '../../services/keno/ticketLogics';

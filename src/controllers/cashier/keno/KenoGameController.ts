@@ -10,11 +10,11 @@ import {
 } from "../../../services/keno/gameLogics";
 import { getKenoTicket } from "../../../services/keno/ticketLogics";
 import { kenoGameConstants } from "../../../utils/constants/kenoGameConstants";
-import { IKenoTicketCreateData } from "../../../utils/schemas/kenoSchemas";
+import { IKenoTicketCreateData } from "../../../utils/shared/schemas/kenoSchemas";
 import {
   IKenoGameConfigurations,
   ICurrentKenoGamesResponse,
-} from "../../../utils/shared-types/keno";
+} from "../../../utils/shared/shared-types/keno";
 
 export const getKenoGameConfigurations = async (req: any, res: any) => {
   try {

@@ -1,10 +1,11 @@
 // Auto-generated Prisma models
 
-import { UserRole,ActiveStatus,GameType,GameStatus,TicketStatus } from '@prisma/client';
+import { UserRole,ActiveStatus,ProviderUserRole,GameType,GameStatus,TicketStatus } from '@prisma/client';
 
 export interface IDBUser {
   id: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email?: string;
   userName?: string;
   phoneNumber: string;
@@ -17,7 +18,8 @@ export interface IDBUser {
 
 export interface IDBUserWithRelations {
   id: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email?: string;
   userName?: string;
   phoneNumber: string;
@@ -27,12 +29,12 @@ export interface IDBUserWithRelations {
   createdAt: Date;
   updatedAt: Date;
   refreshTokens: IDBRefreshToken[];
-  providers: IDBProvider[];
 }
 
 export interface IDBCashier {
   id: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   userName?: string;
   phoneNumber: string;
   password: string;
@@ -44,7 +46,8 @@ export interface IDBCashier {
 
 export interface IDBCashierWithRelations {
   id: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   userName?: string;
   phoneNumber: string;
   password: string;
@@ -59,11 +62,44 @@ export interface IDBCashierWithRelations {
   refreshTokens: IDBRefreshToken[];
 }
 
+export interface IDBProviderAdmin {
+  id: string;
+  firstName: string;
+  lastName: string;
+  userName?: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  role: ProviderUserRole;
+  status: ActiveStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  providerId: string;
+}
+
+export interface IDBProviderAdminWithRelations {
+  id: string;
+  firstName: string;
+  lastName: string;
+  userName?: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  role: ProviderUserRole;
+  status: ActiveStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  providerId: string;
+  provider: IDBProvider;
+  refreshTokens: IDBRefreshToken[];
+}
+
 export interface IDBRefreshToken {
   id: string;
   hashedToken: string;
   userId?: string;
   cashierId?: string;
+  providerAdminId?: string;
   revoked: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -76,6 +112,8 @@ export interface IDBRefreshTokenWithRelations {
   User?: IDBUser;
   cashierId?: string;
   Cashier?: IDBCashier;
+  providerAdminId?: string;
+  providerAdmin?: IDBProviderAdmin;
   revoked: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -99,7 +137,7 @@ export interface IDBProviderWithRelations {
   status: ActiveStatus;
   createdAt: Date;
   updatedAt: Date;
-  admins: IDBUser[];
+  admins: IDBProviderAdmin[];
   branches: IDBBranch[];
 }
 
