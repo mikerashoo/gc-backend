@@ -35,9 +35,25 @@ export const userRegistrationSchema = commonUserRegisterSchema.extend({
 });
 
 
+export const changePasswordSchema = z.object({  
+  password: z.string().min(8),
+});
+
+export type IChangePasswordSchema = z.infer<typeof changePasswordSchema>; 
+
+export const cashierUpdateSchema = z.object({ 
+  firstName: z.string(),
+  lastName: z.string(),
+  phoneNumber: ethiopianPhoneNumberSchema, 
+  userName: z.string(),  
+});
+
+export type ICashierUpdateSchema = z.infer<typeof cashierUpdateSchema>; 
+
+
 
 export const cashierREgisterSchema = commonUserRegisterSchema.extend({ 
-  branchId: z.string(), 
+  // branchId: z.string(), 
 });
 export type ICashierRegisterSchema = z.infer<typeof cashierREgisterSchema>; 
 

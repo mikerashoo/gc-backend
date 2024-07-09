@@ -1,19 +1,19 @@
-import { Request, Response } from "express";  
-import db from "../../lib/db";
+import { ProviderBranchService } from "../../services/providers/branch-info-services";
+import { ProviderTicketReportService } from "../../services/providers/provider-ticket-report-service";
 
 
 export const getProviderBranches = async (req: any, res: any) => {
   try {
-    const providerId = req.params.providerId;
+    const providerId = req.payload.providerId;
 
-    const branches = await db.branch.findMany({
-      where: {
-        providerId
-      },
-       
-    });
 
-    return res.status(200).json(branches);
+    const branchList = await ProviderBranchService.list(providerId);
+    if(branchList.error){
+      return res.status(403).json({ error:branchList.error });
+
+    }
+
+    return res.status(200).json(branchList.data);
   } catch (error) {
     console.error("Error fetching branches", error);
     return res.status(500).json({ error: "Failed to fetch branches" });
@@ -24,32 +24,15 @@ export const getProviderBranches = async (req: any, res: any) => {
 
 export const addBranch = async (req: any, res: any) => {
   try {
-    const providerId = req.params.providerId;
+    const providerId = req.payload.providerId;
 
-    const {name, address, identifier} = req.body;
+    const addBranchService = await ProviderBranchService.add(providerId, req.body);
+    if(addBranchService.error){
+      return res.status(403).json({ error:addBranchService.error });
 
+    } 
 
-    const branchExists = await db.branch.findFirst({
-      where: {
-        name 
-      }
-    });
-
-    if(branchExists){
-      return res.status(403).json({ error: "Branch with the same name already exists" });
-    }
-
-    const branch = await db.branch.create({
-      data: {
-        
-        name, 
-        identifier,
-        address,
-        providerId
-      }
-    })
-
-    return res.status(200).json(branch);
+    return res.status(200).json(addBranchService.data);
   } catch (error) {
     console.error("Error fetching branches", error);
     return res.status(500).json({ error: "Failed to fetch branches" });
@@ -58,21 +41,67 @@ export const addBranch = async (req: any, res: any) => {
 
 export const getBranchDetail = async (req: any, res: any) => {
   try {
-    const branchId = req.payload.branchId;
+    const branchId = req.params.branchId;
+    const { start, end } = req.query;
+    const branch = await ProviderBranchService.detail(branchId, start, end);
+    if (branch.error) {
+      return res.status(403).json({ error: branch.error});
+    } 
 
-    const branch = await db.branch.findUnique({
-      where: {
-        id: branchId
-      },
-       include: {
-        cashiers: true
-       }
-    });
-
-    return res.status(200).json(branch);
+    
+    return res.status(200).json(branch.data);
   } catch (error) {
     console.error("Error fetching branches", error);
     return res.status(500).json({ error: "Failed to fetch branches" });
+  }
+};
+
+export const getBranchReports = async (req: any, res: any) => {
+  try {
+    const providerId = req.payload.providerId;
+    const data = req.body;
+     
+    const branch = await ProviderTicketReportService.reportOfBranch([providerId], data);
+    if (branch.error) {
+      return res.status(403).json({ error: branch.error});
+    } 
+
+    
+    return res.status(200).json(branch.data);
+  } catch (error) {
+    console.error("Error fetching branches", error);
+    return res.status(500).json({ error: "Failed to fetch branches" });
+  }
+};
+
+
+export const updateBranch = async (req: any, res: any) => {
+  try {
+    const providerId = req.payload.providerId;
+    const branchId = req.params.branchId;
+    const branch = await ProviderBranchService.update(req.body, branchId, providerId);
+    if (branch.error) {
+      return res.status(403).json({ error: branch.error});
+    } 
+    return res.status(200).json(branch.data);
+  } catch (error) {
+    console.error("Error fetching branches", error);
+    return res.status(500).json({ error: "Failed to fetch branches" });
+  }
+};
+
+
+export const deleteBranch = async (req: any, res: any) => {
+  try { 
+    const branchId = req.params.branchId;
+    const branch = await ProviderBranchService.delete( branchId);
+    if (branch.error) {
+      return res.status(403).json({ error: branch.error});
+    } 
+    return res.status(200).json(branch);
+  } catch (error) {
+    console.error("Error fetching branches", error);
+    return res.status(500).json({ error: "Failed to dele branches" });
   }
 };
 

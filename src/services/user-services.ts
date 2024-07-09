@@ -3,10 +3,18 @@ import { Prisma, User, UserRole } from "@prisma/client";
 import db from "../lib/db"; 
 import { hashToken } from "../lib/hashToken";
 import { PrismaCallResponse } from "../utils/types/prismaCallResponse";
+import { IUserType } from "../lib/jwt";
 
-export const findUserById = async (id: string) => {
+export const findUserById = async (id: string, type: IUserType) => {
   try {
-    return await db.user.findFirst({
+    let tableName = 'user';
+    if(type == IUserType.CASHIER){
+      tableName =  'cashier';
+    }
+    if(type == IUserType.PROVIDER){
+      tableName =  'providerAdmin';
+    }
+    return await db[`${tableName}`].findFirst({
       where: {
         id,
       },
@@ -182,15 +190,17 @@ export const registerUser = async (
 export const addRefreshTokenToWhitelist = async ({
   jti,
   refreshToken,
-  userId,
-  cashierId,
-}) => {
+  userId, 
+  type  
+}) => { 
+  let userIdField = 'userId';
   return await db.refreshToken.create({
     data: {
       id: jti,
       hashedToken: hashToken(refreshToken),
-      userId,
-      cashierId
+      userId: type == "USER" ? userId : null,
+      providerAdminId: type == "PROVIDER" ? userId : null,
+      cashierId: type == "CASHIER" ? userId : null,
     },
   });
 };

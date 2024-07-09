@@ -1,6 +1,6 @@
 import bcrypt = require("bcrypt");
 
-import { Branch, Provider, User, UserRole, Cashier, ProviderAdmin, ProviderUserRole } from "@prisma/client";
+import { Branch, Provider, User, UserRole, Cashier} from "@prisma/client";
 import db from "../src/lib/db";
 const adminEmail = "mkbirhanu@gmail.com";
 const adminPassword = "11221122";
@@ -55,7 +55,7 @@ const addTestProviderAndAdminAdmin = async (): Promise<Provider> => {
           email: "jegna@bg.com",
           userName: "jegna@bg",
           phoneNumber: "011221122",
-          role: ProviderUserRole.SUPER_ADMIN,
+          role: UserRole.PROVIDER_SUPER_ADMIN,
           password,
         }
       }
@@ -76,12 +76,12 @@ const addTestProviderBranch = async (providerId: string): Promise<Branch> => {
 const addTestCashierFOrBranch = async (branchId: string): Promise<Cashier> => {
   const password = await bcrypt.hash("12345678", 10);
 
-  return await db.cashier.create({
+  return await db.user.create({
     data: {
       firstName: "Bethelihem",
       lastName: "Tekile",
       phoneNumber: "0909091133",
-      branchId,
+      cashierBranchId: branchId,
       password,
       userName: "cashier@apollo",
     },

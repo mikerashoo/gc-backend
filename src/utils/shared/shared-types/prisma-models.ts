@@ -9,10 +9,11 @@ export interface IDBUser {
   email?: string;
   userName?: string;
   phoneNumber: string;
-  password: string;
   role: UserRole;
   status: ActiveStatus;
   createdAt: Date;
+  deletedAt?: Date;
+  deleted: boolean;
   updatedAt: Date;
 }
 
@@ -23,10 +24,11 @@ export interface IDBUserWithRelations {
   email?: string;
   userName?: string;
   phoneNumber: string;
-  password: string;
   role: UserRole;
   status: ActiveStatus;
   createdAt: Date;
+  deletedAt?: Date;
+  deleted: boolean;
   updatedAt: Date;
   refreshTokens: IDBRefreshToken[];
 }
@@ -37,9 +39,10 @@ export interface IDBCashier {
   lastName: string;
   userName?: string;
   phoneNumber: string;
-  password: string;
   status: ActiveStatus;
   createdAt: Date;
+  deletedAt?: Date;
+  deleted: boolean;
   updatedAt: Date;
   branchId: string;
 }
@@ -50,9 +53,10 @@ export interface IDBCashierWithRelations {
   lastName: string;
   userName?: string;
   phoneNumber: string;
-  password: string;
   status: ActiveStatus;
   createdAt: Date;
+  deletedAt?: Date;
+  deleted: boolean;
   updatedAt: Date;
   branchId: string;
   branch: IDBBranch;
@@ -69,10 +73,11 @@ export interface IDBProviderAdmin {
   userName?: string;
   email: string;
   phoneNumber: string;
-  password: string;
   role: ProviderUserRole;
   status: ActiveStatus;
   createdAt: Date;
+  deletedAt?: Date;
+  deleted: boolean;
   updatedAt: Date;
   providerId: string;
 }
@@ -84,10 +89,11 @@ export interface IDBProviderAdminWithRelations {
   userName?: string;
   email: string;
   phoneNumber: string;
-  password: string;
   role: ProviderUserRole;
   status: ActiveStatus;
   createdAt: Date;
+  deletedAt?: Date;
+  deleted: boolean;
   updatedAt: Date;
   providerId: string;
   provider: IDBProvider;
@@ -127,6 +133,8 @@ export interface IDBProvider {
   status: ActiveStatus;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deleted: boolean;
 }
 
 export interface IDBProviderWithRelations {
@@ -137,6 +145,8 @@ export interface IDBProviderWithRelations {
   status: ActiveStatus;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deleted: boolean;
   admins: IDBProviderAdmin[];
   branches: IDBBranch[];
 }
@@ -150,6 +160,8 @@ export interface IDBBranch {
   status: ActiveStatus;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deleted: boolean;
 }
 
 export interface IDBBranchWithRelations {
@@ -161,6 +173,8 @@ export interface IDBBranchWithRelations {
   status: ActiveStatus;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deleted: boolean;
   provider: IDBProvider;
   cashiers: IDBCashier[];
   games: IDBGame[];

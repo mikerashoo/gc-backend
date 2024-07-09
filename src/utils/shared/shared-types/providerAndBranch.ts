@@ -1,4 +1,7 @@
 import { ActiveStatus } from "@prisma/client";
+import { IDBBranch, IDBCashier } from "./prisma-models";
+import { CashierWithoutPassword, ICashier } from "./userModels";
+import { ICashierReport } from "./gameModels";
 
  
 
@@ -27,5 +30,12 @@ export interface IProvider {
     status:       ActiveStatus;
     createdAt     :Date;
     updatedAt     :Date;         
+   
+  }
+
+
+  export interface IBranchWithDetail extends IDBBranch {
+    cashiers: IDBCashier[],
+    report: ICashierReport
    
   }

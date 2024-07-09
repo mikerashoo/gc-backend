@@ -74,11 +74,11 @@ export function getGamePrefix(gameType: GameType,): string {
 // Define custom function to generate ticket ID with prefix and 10 digits
 export async function generateUniqueIdForAGame(
   gameType: GameType,
-  branchID: string
+  branchId: string
 ) {
 
   const branchPrefix =
-    branchID.charAt(0) + branchID.charAt(branchID.length - 1);
+    branchId.charAt(0) + branchId.charAt(branchId.length - 1);
   const prefix = `${getGamePrefix(gameType)}${branchPrefix}`.toUpperCase();
 
   let generatedId;

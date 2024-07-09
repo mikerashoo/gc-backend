@@ -1,5 +1,5 @@
 import { ActiveStatus, UserRole } from "@prisma/client";
-import { IDBCashier, IDBUser } from "./prisma-models";
+import { IDBCashier, IDBProvider, IDBProviderAdmin, IDBUser } from "./prisma-models";
 import { IBranch } from "./providerAndBranch";
 
 export interface ICashier  {
@@ -37,6 +37,13 @@ export interface ICashierLoginData extends IDBCashier {
   accessTokenExpires: number;
 }
 
+export interface IProviderAdminLoginData extends IDBProviderAdmin { 
+  provider: IDBProvider; 
+  accessToken:  string;
+  refreshToken:  string;
+  accessTokenExpires: number;
+}
+
 
 
 export interface ILoginUser extends IAccount { 
@@ -53,3 +60,8 @@ export interface IRefreshToken {
     createdAt   : Date,
     updatedAt   : Date
   }
+
+
+export type UserWithoutPassword = Omit<IDBUser, 'password'>;
+export type ProviderAdminWithoutPassword = Omit<IDBProviderAdmin, 'password'>;
+export type CashierWithoutPassword = Omit<IDBCashier, 'password'>;

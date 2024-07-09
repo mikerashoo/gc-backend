@@ -23,11 +23,12 @@ function isAuthenticated(req, res, next) {
   if (!authorization) {
     res.status(401);
     throw new Error('🚫 Un-Authorized Missing Authorization Header 🚫');
-  }
+  } 
 
   try {
     const token = authorization.split(' ')[1];
     const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    console.log("Payload", payload)
     req.payload = payload;
   } catch (err) {
     res.status(401);

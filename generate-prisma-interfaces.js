@@ -28,9 +28,10 @@ const parseFields = (fieldsBlock, enums, modelNames, withRelations) => {
   const fields = fieldsBlock.trim().split('\n');
   return fields.map(field => {
     const parts = field.trim().split(/\s+/);
-    if (parts.length < 2) return null;
+    if (parts.length < 2 || parts[0] == 'password') return null;
 
     const [name, type] = parts;
+   
     let tsType = type.replace('Int', 'number')
       .replace('String', 'string')
       .replace('Boolean', 'boolean')

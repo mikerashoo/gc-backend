@@ -46,6 +46,8 @@ model User {
   role            UserRole
   status          ActiveStatus     @default(ACTIVE)
   createdAt       DateTime         @default(now())
+   deletedAt DateTime?        
+  deleted Boolean @default(false)
   updatedAt       DateTime         @updatedAt
   refreshTokens   RefreshToken[] 
 }
@@ -59,6 +61,8 @@ model Cashier {
   password    String
   status          ActiveStatus     @default(ACTIVE)
   createdAt       DateTime         @default(now())
+   deletedAt DateTime?        
+  deleted Boolean @default(false)
   updatedAt       DateTime         @updatedAt
   branchId       String  
   branch         Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
@@ -80,6 +84,8 @@ model ProviderAdmin {
   role          ProviderUserRole     @default(SUPER_ADMIN)
   status          ActiveStatus     @default(ACTIVE)
   createdAt       DateTime         @default(now())
+   deletedAt DateTime?        
+  deleted Boolean @default(false)
   updatedAt       DateTime         @updatedAt
   providerId       String  
   provider         Provider          @relation(fields: [providerId], references: [id], onDelete: Cascade) 
@@ -110,10 +116,11 @@ model Provider {
   name       String
   identifier String @unique
   address    String
-
   status    ActiveStatus @default(ACTIVE)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
+   deletedAt DateTime?        
+  deleted Boolean @default(false)
   admins    ProviderAdmin[]
   branches  Branch[]
 }
@@ -129,6 +136,8 @@ model Branch {
   status    ActiveStatus     @default(ACTIVE)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
+  deletedAt DateTime?        
+  deleted Boolean @default(false)
   provider  Provider         @relation(fields: [providerId], references: [id], onDelete: Cascade)
   cashiers  Cashier[]
   games     Game[]

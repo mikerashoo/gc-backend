@@ -1,5 +1,4 @@
-import { GameStatus, GameType } from "@prisma/client";
-import { Request, Response } from "express";
+import { GameStatus, GameType } from "@prisma/client"; 
 import db from "../../../lib/db";
 import { generateTicketId } from "../../../services/keno";
 import {
