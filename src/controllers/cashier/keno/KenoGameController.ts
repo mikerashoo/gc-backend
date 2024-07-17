@@ -126,7 +126,7 @@ export const addKenoTicket = async (req: any, res: any) => {
       return res.status(401).json({ error: "Un-Authorized" });
     }
 
-    const cashierId = req.payload.cashierId;
+    const cashierId = req.payload.accountId;
     console.log("Cashier ID ", cashierId)
     const gameId = req.params.gameId;
     const game = await db.game.findUnique({
@@ -177,7 +177,7 @@ export const addKenoTicket = async (req: any, res: any) => {
       possibleWinAmount += winAmount;
     }
 
-    const uniqueId = await generateTicketId(game.uniqueId, game.gameType);
+    const uniqueId = await generateTicketId( game.gameType);
 
     // Save the ticket to the database
     const newTicket = await db.ticket.create({

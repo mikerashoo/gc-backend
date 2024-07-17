@@ -127,7 +127,7 @@ export const registerProviderAdmin = async (
      
     }
  
-    const userExists = await db.providerAdmin.findFirst({
+    const userExists = await db.user.findFirst({
       where: {
        userName 
       },
@@ -146,7 +146,7 @@ export const registerProviderAdmin = async (
   
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await db.providerAdmin.create({
+    const user = await db.user.create({
       data: {
         firstName,
         lastName,

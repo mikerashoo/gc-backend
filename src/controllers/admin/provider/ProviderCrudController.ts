@@ -5,6 +5,7 @@ import {
 import db from "../../../lib/db";
 import { IProviderCreateSchema } from "../../../utils/shared/schemas/provider/provider-information-crud-shema";
 import bcrypt = require("bcrypt");
+import { UserRole } from "@prisma/client";
 
 export const getProviders = async (req: any, res: any) => {
   try {
@@ -42,6 +43,7 @@ export const addProvider = async (req: any, res: any) => {
             lastName,
             email,
             phoneNumber,
+            role: UserRole.PROVIDER_SUPER_ADMIN,
             userName,
             password: _password
           }

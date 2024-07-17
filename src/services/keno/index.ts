@@ -84,8 +84,10 @@ export async function generateUniqueIdForAGame(
   let generatedId;
   do {
     const { randomUUID } = new ShortUniqueId({ length: 5 });
+    const randomNumbers = getRandomNumbers();
+    
     // Concatenate the parts with a hyphen in between
-    generatedId = `${prefix}-${randomUUID()}-${randomUUID()}`;
+    generatedId = `${prefix}-${randomUUID()}-${randomNumbers}`;
   } while (await db.game.findFirst({ where: { uniqueId: {
       equals: generatedId,
     mode: 'insensitive'
@@ -95,9 +97,8 @@ export async function generateUniqueIdForAGame(
 }
 
 // Define custom function to generate ticket ID with prefix and 10 digits
-export async function generateTicketId(gameUniqueId: string,  gameType: GameType) {
-  const gameLastDigits = gameUniqueId.slice(-5).toUpperCase();
-  const prefix = `${getGamePrefix(gameType)}T-${gameLastDigits}`.toUpperCase();
+export async function generateTicketId( gameType: GameType) { 
+  const prefix = `${getGamePrefix(gameType)}T-`.toUpperCase();
 
   // const prefix = gameUniqueId.slice(0, 3) + "T-" + gameUniqueId.slice(-5).toUpperCase();
 
@@ -105,13 +106,23 @@ export async function generateTicketId(gameUniqueId: string,  gameType: GameType
   do {
     generatedId = `${prefix}-${uuidv4(v4options)}`;
 
-    const { randomUUID } = new ShortUniqueId({ length: 5 });
+    const { randomUUID } = new ShortUniqueId({ length: 6 });
+    const randomNumbers = getRandomNumbers();
 
     // Concatenate the parts with a hyphen in between
-    generatedId = `${prefix}-${randomUUID()}`;
+    generatedId = `${prefix}-${randomUUID()}-${randomNumbers}`.toUpperCase();
   } while (await db.ticket.findFirst({ where: { uniqueId: {
     equals: generatedId,
     mode: 'insensitive'
   } } }));
   return generatedId.toUpperCase();
+}
+
+
+export function getRandomNumbers(): string {
+  const { randomUUID } = new ShortUniqueId({
+    length: 6,
+    dictionary: ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
+  });
+  return randomUUID();
 }

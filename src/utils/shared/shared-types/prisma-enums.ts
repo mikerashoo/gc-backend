@@ -2,8 +2,10 @@
 
 export enum UserRole {
   ADMIN = "ADMIN",
+  PROVIDER_SUPER_ADMIN = "PROVIDER_SUPER_ADMIN",
   PROVIDER_ADMIN = "PROVIDER_ADMIN",
-  BRANCH_ADMIN = "BRANCH_ADMIN",
+  SUPER_AGENT = "SUPER_AGENT",
+  AGENT = "AGENT",
   CASHIER = "CASHIER",
 }
 
@@ -15,6 +17,11 @@ export enum ProviderUserRole {
 export enum ActiveStatus {
   ACTIVE = "ACTIVE",
   IN_ACTIVE = "IN_ACTIVE",
+}
+
+export enum AgentRule {
+  SUPER_AGENT = "SUPER_AGENT",
+  AGENT = "AGENT",
 }
 
 export enum GameStatus {

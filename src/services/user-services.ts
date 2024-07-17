@@ -1,23 +1,26 @@
 import bcrypt = require("bcrypt");
-import { Prisma, User, UserRole } from "@prisma/client";
+import { ActiveStatus, Prisma, User, UserRole } from "@prisma/client";
 import db from "../lib/db"; 
 import { hashToken } from "../lib/hashToken";
-import { PrismaCallResponse } from "../utils/types/prismaCallResponse";
-import { IUserType } from "../lib/jwt";
+import { PrismaCallResponse } from "../utils/types/prismaCallResponse"; 
+import { IDBUser, IDBUserWithRelations } from "../utils/shared/shared-types/prisma-models";
+import { IUser } from "../utils/shared/shared-types/userModels";
+import { IServiceResponse } from "../utils/api-helpers/serviceResponse";
+import { IChangePasswordSchema, IUserUpdateSchema } from "../utils/shared/schemas/userSchemas";
+import { checkDBColumnDuplicate } from "../utils/api-helpers/unique-identifier-generator";
 
-export const findUserById = async (id: string, type: IUserType) => {
+export const findUserById = async (id: string) => {
   try {
-    let tableName = 'user';
-    if(type == IUserType.CASHIER){
-      tableName =  'cashier';
-    }
-    if(type == IUserType.PROVIDER){
-      tableName =  'providerAdmin';
-    }
-    return await db[`${tableName}`].findFirst({
+     
+    return await db.user.findFirst({
       where: {
         id,
       },
+      include: {
+        provider: true,
+        cashierBranch: true,
+        agentProvider: true,
+      }
     });
   } catch (err: any) {
     throw err;
@@ -40,31 +43,21 @@ export const findUserByEmailPhoneOrUserName = async (
   }
 };
 
-export const findLoginUser = async (userNameInfo: string) => {
+export const findLoginUser = async (userNameInfo: string)=> {
   try {
     const user = await db.user.findFirst({
       where: {
-        OR: [
-          {
-            phoneNumber: {
-              equals: userNameInfo,
-              mode: "insensitive",
-            },
-          },
-          {
-            email: {
-              equals: userNameInfo,
-              mode: "insensitive",
-            },
-          },
-          {
-            userName: {
-              equals: userNameInfo,
-              mode: "insensitive",
-            },
-          },
-        ],
+        userName: {
+          equals: userNameInfo,
+          mode: "insensitive",
+        },
       },
+
+      include: {
+        provider: true,
+        agentProvider: true,
+        cashierBranch: true,
+      }
       
     });
 
@@ -190,17 +183,14 @@ export const registerUser = async (
 export const addRefreshTokenToWhitelist = async ({
   jti,
   refreshToken,
-  userId, 
-  type  
+  userId,  
 }) => { 
   let userIdField = 'userId';
   return await db.refreshToken.create({
     data: {
       id: jti,
       hashedToken: hashToken(refreshToken),
-      userId: type == "USER" ? userId : null,
-      providerAdminId: type == "PROVIDER" ? userId : null,
-      cashierId: type == "CASHIER" ? userId : null,
+      userId
     },
   });
 };
@@ -224,7 +214,7 @@ export function deleteRefreshToken(id) {
       revoked: true,
     },
   });
-}
+} 
 
 export function revokeTokens(userId) {
   return db.refreshToken.updateMany({
@@ -242,3 +232,161 @@ export async function validatePassword(dbPassword: string, newPassword): Promise
   return  await bcrypt.compare(newPassword, dbPassword);
    
 }
+
+
+
+const updateUser = async (
+  userId: string,
+  userUpdateData: IUserUpdateSchema, 
+
+): Promise<IServiceResponse<IUser>> => {
+  const {firstName, lastName, phoneNumber, userName } = userUpdateData;
+  
+ 
+  const userNameTaken = await checkDBColumnDuplicate("user", {
+    
+    id: { not: userId },
+
+    userName: {
+      equals: userName.trim(),
+      mode: "insensitive",
+    },
+    
+  });
+  if (userNameTaken) {
+    return {
+      error: "User Name is already Taken Please Use another and try again",
+    };
+  }
+  const updatedUser = await db.user.update({
+    where: { 
+      
+      id: userId
+     },
+    data: {
+       firstName,
+       lastName,
+       phoneNumber,
+       userName
+    },
+  });
+  delete updatedUser.password;
+  return {
+    data: updatedUser,
+  };
+};
+
+
+ const changeStatus = async (
+  id: string, 
+) : Promise<IServiceResponse<IUser>> => {
+  try {  
+
+    const user = await db.user.findUnique({
+      where: {
+        id
+      }
+    })
+    if (!user) {
+      return {
+        error: "Invalid User Id",
+      };
+    }
+
+    const status = user.status == ActiveStatus.ACTIVE ? ActiveStatus.IN_ACTIVE : ActiveStatus.ACTIVE;
+
+    const userUpdated = await db.user.update({
+      where: {
+        id
+      },
+      
+      data: {
+        status
+      }
+    })
+    await revokeTokens(id)
+
+    delete userUpdated.password
+   
+    return {
+      data: userUpdated,
+    };
+  } catch (error) {
+    return {
+      error: "Something went wrong.",
+    };
+  }
+};
+
+
+ const changePassword = async ({id, passwordData} : {
+  id: string;
+  passwordData: IChangePasswordSchema
+ }): Promise<IServiceResponse<boolean>> => {
+  try { 
+    const user = await db.user.findUnique({
+      where: {
+        id
+      }
+    })
+    if (!user) {
+      return {
+        error: "Invalid User Id",
+      };
+    }
+
+    const {
+      password
+    } = passwordData
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const cashierExists = await db.user.update({
+      where: {
+        id
+      },
+      data: {
+        password: hashedPassword
+      },
+      select: {id: true}
+    })
+
+
+    
+    await revokeTokens(cashierExists.id)
+   
+
+    return {
+      data: true
+    }
+ 
+ 
+ 
+  } catch (error) {
+    return {
+      error: "Something went wrong.",
+    };
+  }
+};
+
+
+const deleteUser = async (
+  id: string, 
+): Promise<IServiceResponse<boolean>> => {
+  const deleted = await db.user.delete({
+    where: {
+      id, 
+    },
+  });
+  return {
+    data: deleted ? true : false,
+  };
+};
+
+
+export const CommonUserManagementService = { 
+  update: updateUser,
+  changePassword,
+  changeStatus,
+  delete: deleteUser,
+};

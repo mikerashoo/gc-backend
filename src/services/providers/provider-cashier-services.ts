@@ -1,31 +1,22 @@
-import { ActiveStatus } from "@prisma/client";
+import { UserRole } from "@prisma/client";
 import db from "../../lib/db";
 import { IServiceResponse } from "../../utils/api-helpers/serviceResponse";
 import {
-  checkAndAppendRandomNumber,
   checkDBColumnDuplicate,
-  generateIdentifierFromName,
 } from "../../utils/api-helpers/unique-identifier-generator";
-import {
-  IBranchCreateSchema,
-  IBranchUpdateSchema,
-} from "../../utils/shared/schemas/provider/branch-information-schema";
-import {
-  IDBBranch,
-  IDBCashier,
-} from "../../utils/shared/shared-types/prisma-models";
 import { IBranchWithDetail } from "../../utils/shared/shared-types/providerAndBranch";
 import { getTicketReportsForBranches } from "../ticket-report-services";
 import ShortUniqueId = require("short-unique-id");
 import { ICashierRegisterSchema, ICashierUpdateSchema } from "../../utils/shared/schemas/userSchemas";
 import bcrypt = require("bcrypt");
+import { IUser } from "../../utils/shared/shared-types/userModels";
 
 const getBranchCashier = async (
   branchId: string
-): Promise<IServiceResponse<IDBCashier[]>> => {
-  const cashiers = await db.cashier.findMany({
+): Promise<IServiceResponse<IUser[]>> => {
+  const cashiers = await db.user.findMany({
     where: {
-      branchId,
+      cashierBranchId: branchId,
     },
   });
 
@@ -38,9 +29,9 @@ const validateCashiers = async (
   providerIds: string[],
   cashierIds: string[]
 ): Promise<IServiceResponse<boolean>> => {
-  const validCashiers = await db.cashier.findMany({
+  const validCashiers = await db.user.findMany({
     where: {
-      branch: {  
+      cashierBranch: {  
         providerId: {
           in: providerIds
         },
@@ -75,12 +66,12 @@ const validateCashiers = async (
 const addCashier = async (
   branchId: string,
   cashierInfo: ICashierRegisterSchema
-): Promise<IServiceResponse<IDBCashier>> => {
+): Promise<IServiceResponse<IUser>> => {
   try {
     const { firstName, lastName, password, phoneNumber, userName } =
       cashierInfo;
 
-    const userNameTaken = await checkDBColumnDuplicate("cashier", {
+    const userNameTaken = await checkDBColumnDuplicate("user", {
       userName: {
         equals: userName.trim(),
         mode: "insensitive",
@@ -93,14 +84,15 @@ const addCashier = async (
     }
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const cashier = await db.cashier.create({
+    const cashier = await db.user.create({
       data: {
-        branchId,
+       cashierBranchId: branchId,
         firstName,
         lastName,
         password: hashedPassword,
         userName,
         phoneNumber,
+        role: UserRole.CASHIER
       },
     });
 
@@ -130,21 +122,12 @@ const getBranchDetailById = async (
     return {
       error: "Branch With Id Not Found",
     };
-  }
-  let cashiers = await db.cashier.findMany({
-    where: {
-      branchId: id,
-    },
-  });
-  cashiers.forEach((cashier) => {
-    delete cashier.password;
-  });
+  } 
 
   const report = await getTicketReportsForBranches([id], { start, end });
 
   const data = {
-    ...branch,
-    cashiers,
+    ...branch, 
     report,
   };
 
@@ -157,11 +140,11 @@ const updateCashier = async (
   cashierId: string,
   cashierUpdateData: ICashierUpdateSchema, 
 
-): Promise<IServiceResponse<IDBCashier>> => {
+): Promise<IServiceResponse<IUser>> => {
   const {firstName, lastName, phoneNumber, userName } = cashierUpdateData;
   
  
-  const userNameTaken = await checkDBColumnDuplicate("cashier", {
+  const userNameTaken = await checkDBColumnDuplicate("user", {
     
     id: { not: cashierId },
 
@@ -176,7 +159,7 @@ const updateCashier = async (
       error: "User Name is already Taken Please Use another and try again",
     };
   }
-  const cashier = await db.cashier.update({
+  const cashier = await db.user.update({
     where: { 
       
       id: cashierId
@@ -198,11 +181,11 @@ const deleteCashier = async (
   id: string,
   branchId
 ): Promise<IServiceResponse<boolean>> => {
-  const deleted = await db.cashier.delete({
+  const deleted = await db.user.delete({
     where: {
       id,
 
-      branchId,
+      cashierBranchId: branchId,
     },
   });
   return {

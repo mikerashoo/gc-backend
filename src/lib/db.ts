@@ -17,10 +17,8 @@ db.$use(
   createSoftDeleteMiddleware({
     models: {
       User: true,
-      Provider: true,
-      ProviderAdmin: true,
-      Branch: true,
-      Cashier: true,  
+      Provider: true, 
+      Branch: true, 
     },
     defaultConfig: {
       field: "deletedAt",

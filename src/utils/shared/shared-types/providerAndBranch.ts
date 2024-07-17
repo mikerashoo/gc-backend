@@ -1,6 +1,6 @@
 import { ActiveStatus } from "@prisma/client";
-import { IDBBranch, IDBCashier } from "./prisma-models";
-import { CashierWithoutPassword, ICashier } from "./userModels";
+import { IDBBranch } from "./prisma-models";
+import {  ICashier } from "./userModels";
 import { ICashierReport } from "./gameModels";
 
  
@@ -34,8 +34,7 @@ export interface IProvider {
   }
 
 
-  export interface IBranchWithDetail extends IDBBranch {
-    cashiers: IDBCashier[],
+  export interface IBranchWithDetail extends IDBBranch { 
     report: ICashierReport
    
   }

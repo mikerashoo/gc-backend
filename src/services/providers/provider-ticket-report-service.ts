@@ -1,117 +1,188 @@
 import db from "../../lib/db";
+// import { IServiceResponse } from "../../utils/api-helpers/serviceResponse";
+// import { IBasicReportSchema } from "../../utils/shared/schemas/reportSchema";
+
+// import { endOfDay, startOfDay } from "date-fns";
+// import { TicketStatus } from "@prisma/client";
+// import { ICommonReport } from "../../utils/shared/shared-types/reportModels";
+
+import { PrismaClient, TicketStatus } from '@prisma/client'
+import { startOfDay, endOfDay } from 'date-fns'
 import { IServiceResponse } from "../../utils/api-helpers/serviceResponse";
-import { ITicketReportFilterSchema } from "../../utils/shared/schemas/reportSchema"; 
-
-import { endOfDay, startOfDay } from "date-fns";
-import { ticketDetailInclude } from "../keno/ticketLogics";
-import { ICashierReport } from "../../utils/shared/shared-types/gameModels";
-import { ProviderBranchService } from "./branch-info-services";
-import { ProviderBranchCashierService } from "./provider-cashier-services";
-import { TicketStatus } from "@prisma/client";
-
+import { IBasicReportSchema } from "../../utils/shared/schemas/reportSchema";
+import { ICommonReport } from "../../utils/shared/shared-types/reportModels";
 const getReports = async (
-  providerIds: string[],
-  filterData: ITicketReportFilterSchema
-): Promise<IServiceResponse<ICashierReport>> => {
-  // Validate branches
-  const { branchIds, cashierIds, endAt, gameTypes, startAt } = filterData;
+  providerId: string,
+  filterData: IBasicReportSchema
+): Promise<IServiceResponse<ICommonReport>> => {
+  const { endAt, startAt, agentId, branchId, cashierId, superAgentId } =
+    filterData;
 
-  // validate branch ids
-  if (branchIds && branchIds.length > 0) {
-    
-    const invalidBranches = await ProviderBranchService.validateBranches(
-      providerIds,
-      branchIds
-    );
-    if (invalidBranches.error) {
-      return {
-        error: invalidBranches.error,
-      };
-    }
-  }
-
-  if (cashierIds && cashierIds.length > 0) {
-    const invalidBranches = await ProviderBranchCashierService.validate(
-      providerIds,
-      cashierIds
-    );
-    if (invalidBranches.error) {
-      return {
-        error: invalidBranches.error,
-      };
-    }
-  }
-
-  let startDate = startAt
+  const startDate = startAt
     ? startOfDay(new Date(startAt + "T00:00:00"))
     : startOfDay(new Date());
-  let endDate = endAt
+  const endDate = endAt
     ? endOfDay(new Date(endAt + "T23:59:59"))
     : endOfDay(new Date());
 
-  let tickets = await db.ticket.findMany({
-    where: {
-      game: {
-        branchId: branchIds && branchIds.length > 0
-          ? {
-              in: branchIds,
-            }
-          : {},
-        gameType: gameTypes && gameTypes.length > 0
-          ? {
-              in: gameTypes,
-            }
-          : {},
+  const commonAgentId = agentId ?? superAgentId;
+  console.log("Common Agent Id", agentId);
+
+  const  agentQuery = commonAgentId ? {
+    OR: [
+      {
+        id: commonAgentId ? commonAgentId : {},
       },
-      cashierId: cashierIds && cashierIds.length > 0
-        ? {
-            in: cashierIds,
-          }
-        : {},
-      createdAt: {
-        gte: startAt ? startDate : undefined,
-        lte: endAt ? endDate : undefined,
+      {
+        userName: commonAgentId ? commonAgentId : {},
+      },
+
+      {
+        superAgent: {
+          OR: [
+            {
+              id: commonAgentId ? commonAgentId : {},
+            },
+            {
+              userName: commonAgentId ? commonAgentId : {},
+            },
+          ],
+        },
+      },
+    ],
+  } : {}
+
+  const commonWhere = {
+    createdAt: {
+      gte: startDate,
+      lte: endDate,
+    },
+    cashierId: cashierId ?? {},
+    game: {
+      branch: {
+        AND: [
+          {
+            id: branchId ?? {},
+          },
+          {
+            providerId,
+          },
+
+          agentQuery
+        ],
       },
     },
-    include: ticketDetailInclude,
-    orderBy: { createdAt: "desc" },
-  });
-
-  let totalMoneyCollected = 0;
-  let totalMoneyPaid = 0;
-  let totalMoneyToBePaid = 0;
-  let totalTicketsCancelled = 0;
-  let remainingCash = 0;
-
-  tickets.forEach((ticket) => {
-    if (ticket.status == TicketStatus.CANCELLED) {
-      totalTicketsCancelled++;
-    } else {
-      totalMoneyCollected += ticket.totalBetAmount;
-      if (ticket.status == TicketStatus.WIN) {
-        totalMoneyToBePaid += ticket.winAmount;
-      } else if (ticket.status == TicketStatus.PAID) {
-        totalMoneyPaid += ticket.payment.paidAmount;
-      }
-    }
-  });
-
-  let cashierReport: ICashierReport = {
-    remainingCash,
-    totalMoneyCollected,
-    totalMoneyPaid,
-    totalTickets: tickets.length,
-    tickets,
-    totalTicketsCancelled,
-    totalMoneyToBePaid,
   };
+ 
+  const [
+    collectedTickets,
+    toPayTickets,
+    paidTickets,
+    totalCount,
+    cancelledCount,
+    activeCount,
+    winnerCount,
+    paidCount,
+    loserCount,
+  ] = await Promise.all([
+    db.ticket.aggregate({
+      where: {
+        status: { not: TicketStatus.CANCELLED },
+        ...commonWhere,
+      },
+      _sum: {
+        totalBetAmount: true,
+      },
+      _count: {
+        id: true,
+      },
+    }),
+    db.ticket.aggregate({
+      where: {
+        status: TicketStatus.WIN,
+        ...commonWhere,
+      },
+      _sum: {
+        winAmount: true,
+      },
+    }),
+    db.ticketPayment.aggregate({
+      where: {
+        ticket: {
+          status: TicketStatus.PAID,
+          ...commonWhere,
+        },
+      },
+      _sum: {
+        paidAmount: true,
+      },
+    }),
+    db.ticket.count({
+      where: commonWhere,
+    }),
+    db.ticket.count({
+      where: {
+        status: TicketStatus.CANCELLED,
+        ...commonWhere,
+      },
+    }),
+    db.ticket.count({
+      where: {
+        status: TicketStatus.ON_PLAY,
+        ...commonWhere,
+      },
+    }),
+    db.ticket.count({
+      where: {
+        status: TicketStatus.WIN,
+        ...commonWhere,
+      },
+    }),
+    db.ticket.count({
+      where: {
+        status: TicketStatus.PAID,
+        ...commonWhere,
+      },
+    }),
+    db.ticket.count({
+      where: {
+        status: TicketStatus.LOSE,
+        ...commonWhere,
+      },
+    }),
+  ]);
 
-  
+  const totalMoneyCollected = collectedTickets._sum.totalBetAmount ?? 0;
+  const totalMoneyPaid = paidTickets._sum.paidAmount ?? 0;
+  const totalMoneyToBePaid = toPayTickets._sum.winAmount ?? 0;
+
+  const remainingCash = totalMoneyCollected - totalMoneyPaid;
+  const netCash = remainingCash - totalMoneyToBePaid;
+
+  const report: ICommonReport = {
+    ticket: {
+      totalCount,
+      cancelledCount,
+      activeCount,
+      loserCount,
+      paidCount,
+      winnerCount,
+    },
+    cash: {
+      totalMoneyCollected,
+      totalMoneyPaid,
+      totalMoneyToBePaid,
+      netCash,
+      remainingCash,
+    },
+  };
 
   return {
-    data: cashierReport,
+    data: report,
   };
 };
+ 
+ 
 export const ProviderTicketReportService = {
   reportOfBranch: getReports,
 };

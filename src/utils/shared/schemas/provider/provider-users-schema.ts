@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { commonUserRegisterSchema } from "../userSchemas";
-import { ProviderUserRole } from "../../shared-types/prisma-enums";
+import { ProviderUserRole, UserRole } from "../../shared-types/prisma-enums";
  
 
 
@@ -12,7 +12,7 @@ import { ProviderUserRole } from "../../shared-types/prisma-enums";
    
 
   // Create a Zod schema using z.enum
-const ProviderUserRoleSchema = z.enum([ProviderUserRole.SUPER_ADMIN, ProviderUserRole.ADMIN]);
+const ProviderUserRoleSchema = z.enum([UserRole.PROVIDER_SUPER_ADMIN, UserRole.PROVIDER_ADMIN]);
 
 
   export const providerUserRegistrationSchema = providerUserSchema.extend({ 

@@ -58,10 +58,9 @@ export const getBranchDetail = async (req: any, res: any) => {
 
 export const getBranchReports = async (req: any, res: any) => {
   try {
-    const providerId = req.payload.providerId;
-    const data = req.body;
+    const providerId = req.payload.providerId; 
      
-    const branch = await ProviderTicketReportService.reportOfBranch([providerId], data);
+    const branch = await ProviderTicketReportService.reportOfBranch(providerId, req.query);
     if (branch.error) {
       return res.status(403).json({ error: branch.error});
     } 

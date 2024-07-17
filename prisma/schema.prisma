@@ -17,8 +17,10 @@ datasource db {
 // Users 
 enum UserRole {
   ADMIN
+  PROVIDER_SUPER_ADMIN
   PROVIDER_ADMIN
-  BRANCH_ADMIN
+  SUPER_AGENT
+  AGENT
   CASHIER
 }
 
@@ -38,71 +40,54 @@ model User {
   firstName String
   lastName String
 
-  email       String? @unique
+  email       String? 
   userName    String? @unique
-  phoneNumber String  @unique
+  phoneNumber String 
   password    String
 
   role            UserRole
   status          ActiveStatus     @default(ACTIVE)
+
   createdAt       DateTime         @default(now())
-   deletedAt DateTime?        
+  deletedAt DateTime?        
   deleted Boolean @default(false)
   updatedAt       DateTime         @updatedAt
   refreshTokens   RefreshToken[] 
-}
 
-model Cashier {
-  id             String          @id @unique @default(uuid())
-  firstName String 
-  lastName String 
-  userName    String? @unique
-  phoneNumber String  
-  password    String
-  status          ActiveStatus     @default(ACTIVE)
-  createdAt       DateTime         @default(now())
-   deletedAt DateTime?        
-  deleted Boolean @default(false)
-  updatedAt       DateTime         @updatedAt
-  branchId       String  
-  branch         Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
+ // Provider relations
+  providerId     String?
+  provider       Provider?  @relation("ProviderAdmins", fields: [providerId], references: [id], onDelete: Cascade)
+
+  // Agent relations
+  superAgentId   String?
+  superAgent     User?      @relation("AgentToAgents", fields: [superAgentId], references: [id], onDelete: Cascade)
+  agents         User[]     @relation("AgentToAgents")
+  agentProviderId String?
+  agentProvider   Provider?  @relation("ProviderAgents", fields: [agentProviderId], references: [id], onDelete: Cascade)
+  agentBranches         Branch[] @relation("BranchAgent")
+
+  // cashier relations
+  cashierBranchId   String?
+  cashierBranch         Branch?          @relation("CashierBranch", fields: [cashierBranchId], references: [id], onDelete: Cascade)
   tickets        Ticket[] 
   cancelledTickets        Ticket[] @relation(name: "cancelledTickets")
   ticketPayments TicketPayment[]
-  refreshTokens   RefreshToken[]
+   
+}  
 
-}
 
-model ProviderAdmin {
-  id             String          @id @unique @default(uuid())
-  firstName String 
-  lastName String 
-  userName    String? @unique
-  email String  
-  phoneNumber String  
-  password    String
-  role          ProviderUserRole     @default(SUPER_ADMIN)
-  status          ActiveStatus     @default(ACTIVE)
-  createdAt       DateTime         @default(now())
-   deletedAt DateTime?        
-  deleted Boolean @default(false)
-  updatedAt       DateTime         @updatedAt
-  providerId       String  
-  provider         Provider          @relation(fields: [providerId], references: [id], onDelete: Cascade) 
-  refreshTokens   RefreshToken[]
+enum AgentRule {
+  SUPER_AGENT
+  AGENT 
 }
+ 
 
 model RefreshToken {
   id          String   @id @unique @default(uuid())
   hashedToken String
   userId      String?
-  User        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  cashierId      String?
-  Cashier        Cashier?     @relation(fields: [cashierId], references: [id], onDelete: Cascade)
-
-  providerAdminId      String?
-  providerAdmin        ProviderAdmin?     @relation(fields: [providerAdminId], references: [id], onDelete: Cascade)
+  User        User?     @relation(fields: [userId], references: [id], onDelete: Cascade) 
+ 
 
   revoked     Boolean  @default(false)
   createdAt   DateTime @default(now())
@@ -121,8 +106,12 @@ model Provider {
   updatedAt DateTime     @updatedAt
    deletedAt DateTime?        
   deleted Boolean @default(false)
-  admins    ProviderAdmin[]
+  
   branches  Branch[]
+  
+   // Relations with Users
+  admins     User[]     @relation("ProviderAdmins")
+  agents     User[]     @relation("ProviderAgents")
 }
 
 // branch
@@ -131,15 +120,20 @@ model Branch {
   identifier String @unique
   name       String
   address    String
-  providerId String
 
   status    ActiveStatus     @default(ACTIVE)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
   deletedAt DateTime?        
   deleted Boolean @default(false)
+
+  providerId String
   provider  Provider         @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  cashiers  Cashier[]
+
+  agentId String?
+  agent  User?         @relation("BranchAgent", fields: [agentId], references: [id], onDelete: Cascade)
+
+  cashiers  User[] @relation("CashierBranch")
   games     Game[]
 }
 
@@ -205,12 +199,12 @@ model Ticket {
   game            Game             @relation(fields: [gameId], references: [id])
 
   cashierId         String
-  cashier         Cashier   @relation(fields: [cashierId], references: [id]) 
+  cashier         User   @relation(fields: [cashierId], references: [id]) 
 
 
   cancelledAt         DateTime? 
   cancelledCashierId         String?
-  cancelledBy         Cashier?   @relation(name: "cancelledTickets", fields: [cancelledCashierId], references: [id]) 
+  cancelledBy         User?   @relation(name: "cancelledTickets", fields: [cancelledCashierId], references: [id]) 
 
 
   kenoTicket      KenoTicket?
@@ -272,5 +266,5 @@ model TicketPayment {
   createdAt   DateTime     @default(now())
 
   ticket  Ticket         @relation(fields: [ticketId], references: [id])
-  cashier Cashier @relation(fields: [cashierId], references: [id])
+  cashier User @relation(fields: [cashierId], references: [id])
 }

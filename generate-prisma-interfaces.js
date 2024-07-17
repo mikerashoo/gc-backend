@@ -58,7 +58,10 @@ const parseFields = (fieldsBlock, enums, modelNames, withRelations) => {
       }
     }
 
+    if(withRelations)
     return `  ${name}${optional ? '?' : ''}: ${tsType};`;
+    return `  ${name}: ${tsType} ${optional ? ' | null' : ''};`;
+
   }).filter(Boolean).join('\n');
 };
 

@@ -42,8 +42,37 @@ export async function checkDBColumnDuplicate(
   whereClause: any
 ): Promise<any> {
   // Use Prisma to query the table with the dynamic where clause
+
+   
   const result = await db[tableName].findFirst({
-    where: whereClause,
+    where: {
+      deleted: {},
+      ...whereClause},
+    
+  });
+
+  // If result is not null, the value exists
+  return result !== null;
+}
+
+
+
+// Define custom function to generate ticket ID with prefix and 10 digits
+export async function checkUserNameTaken(
+  userName: string, 
+): Promise<any> {
+  // Use Prisma to query the table with the dynamic where clause
+
+   
+  const result = await db.user.findFirst({
+    where: {
+  
+      userName: {
+        equals: userName.trim(),
+        mode: 'insensitive'
+      }
+    }, 
+    
   });
 
   // If result is not null, the value exists

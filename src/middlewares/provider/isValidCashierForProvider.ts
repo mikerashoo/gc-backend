@@ -1,13 +1,14 @@
-import db from "../../lib/db";
-import { IUserType } from "../../lib/jwt";
+import db from "../../lib/db"; 
+import { isProvider } from "../../lib/helper/userRoleHelpers";
+import { ProviderUserRole } from "../../utils/shared/shared-types/prisma-enums";
 
 export async function isValidCashierForProvider(req, res, next) {
   // Check if the user is authenticated first
-  if (!req.payload) {
+  if (!req.payload || !req.payload.role || !req.payload.providerId) {
     return res.status(401).json({ error: "Un-Authorized" });
   }
 
-  if (req.payload.userType != IUserType.PROVIDER) {
+  if (!isProvider(req.payload.role)) {
     return res
       .status(403)
       .json({ error: "Forbidden", message: "User is not valid Provider" });
@@ -22,10 +23,11 @@ export async function isValidCashierForProvider(req, res, next) {
       .status(403)
       .json({ error: "Cashier Id Not Found", message: "Cashier Id is required" });
   }
-  const valid = await db.cashier.findFirst({
+  const valid = await db.user.findFirst({
     where: {
       id: cashierId, 
-      branch: {
+    
+      cashierBranch: {
         providerId,
 
       }

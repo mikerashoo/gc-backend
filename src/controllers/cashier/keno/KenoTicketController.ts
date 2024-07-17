@@ -12,7 +12,7 @@ export const createTicket = async (req: any, res: any) => {
       return res.status(401).json({ error: "Un-Authorized" });
     }
 
-    const cashierId = req.payload.cashierId;
+    const cashierId = req.payload.accountId;
     const gameId = req.params.gameId;
     const game = await db.game.findUnique({
       where: {
@@ -62,7 +62,7 @@ export const createTicket = async (req: any, res: any) => {
       possibleWinAmount += winAmount;
     }
 
-    const uniqueId = await generateTicketId(game.uniqueId, game.gameType);
+    const uniqueId = await generateTicketId(game.gameType);
  
 
     // Save the ticket to the database
@@ -199,7 +199,7 @@ export const getKenoTicketDetail = async (req: any, res: any) => {
 export const getTodaysTickets = async (req: any, res: any) => {
   try {
     const branchId = req.payload.branchId;
-    const cashierId = req.payload.cashierId;
+    const cashierId = req.payload.accountId;
 
     const now = new Date();
     const startOfDay = new Date(
@@ -260,7 +260,7 @@ export const getTodaysTickets = async (req: any, res: any) => {
 export const markKenoTicketAsPaid = async (req: any, res: any) => {
   try {
     const branchId = req.payload.branchId;
-    const cashierId = req.payload.cashierId;
+    const cashierId = req.payload.accountId;
 
     const { paidAmount, ticketId } = req.body as ITicketPaymentSchema;
 
@@ -318,7 +318,7 @@ export const markKenoTicketAsPaid = async (req: any, res: any) => {
 export const cancelTicket = async (req: any, res: any) => {
   try {
     const branchId = req.payload.branchId;
-    const cashierId = req.payload.cashierId;
+    const cashierId = req.payload.accountId;
 
     const { ticketId } = req.body as ITicketByIdSchema;
 

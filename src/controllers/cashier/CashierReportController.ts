@@ -7,7 +7,7 @@ import { ticketDetailInclude } from '../../services/keno/ticketLogics';
 export const getReportForCashier = async (req: any, res: any) => {
   try {
     const branchId = req.payload.branchId;
-    const cashierId = req.payload.cashierId;
+    const cashierId = req.payload.accountId;
     const { start, end } = req.query;
 
     let startDate = start ? startOfDay(new Date(start + 'T00:00:00')) : startOfDay(new Date());

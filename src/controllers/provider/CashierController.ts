@@ -4,15 +4,13 @@ import db from "../../lib/db";
 import { ActiveStatus } from "@prisma/client";
 import { IChangePasswordSchema } from "../../utils/shared/schemas/userSchemas";
 import { date } from "zod";
-
+import { CommonUserManagementService } from "../../services/user-services";
 
 export const getCashiersBranch = async (req: any, res: any) => {
   try {
     const branchId = req.params.branchId;
 
-    const cashiers = await ProviderBranchCashierService.list(
-      branchId
-    );
+    const cashiers = await ProviderBranchCashierService.list(branchId);
     if (cashiers.error) {
       return res.status(403).json({ error: cashiers.error });
     }
@@ -43,8 +41,6 @@ export const addCashierToBranch = async (req: any, res: any) => {
   }
 };
 
-
-
 export const updateCashier = async (req: any, res: any) => {
   try {
     const cashierId = req.params.cashierId;
@@ -64,76 +60,42 @@ export const updateCashier = async (req: any, res: any) => {
   }
 };
 
-
 export const changeStatusOfCashier = async (req: any, res: any) => {
-  try { 
+  try {
     const cashierId = req.params.cashierId;
 
+    const changeStatusData = await CommonUserManagementService.changeStatus(
+      cashierId
+    );
 
-    const cashierExists = await db.cashier.findUnique({
-      where: {
-        id: cashierId, 
-      }
-    })
-    if (!cashierExists) {
-      return res.status(403).json({ error: "Invalid Cashier Id" });
+    if (changeStatusData.error) {
+      return res.status(403).json({ error: changeStatusData.error });
     }
 
-    const status = cashierExists.status == ActiveStatus.ACTIVE ? ActiveStatus.IN_ACTIVE : ActiveStatus.ACTIVE;
-
-    const cashierUpdated = await db.cashier.update({
-      where: {
-        id: cashierId, 
-      },
-      data: {
-        status
-      }
-    })
-    delete cashierUpdated.password
-    return res.status(200).json(cashierUpdated);
+    return res.status(200).json(changeStatusData.data);
   } catch (error) {
     console.error("Adding cashier error", error);
     return res.status(500).json({ error: "Something went wrong" });
   }
 };
-
 
 export const changeCashierPassword = async (req: any, res: any) => {
-  try { 
+  try {
     const cashierId = req.params.cashierId;
 
-    const {
-      password
-    } = req.body as IChangePasswordSchema
+    const changePasswordData = await CommonUserManagementService.changePassword(
+      { id: cashierId, passwordData: req.body }
+    );
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const cashierExists = await db.cashier.update({
-      where: {
-        id: cashierId, 
-      },
-      data: {
-        password: hashedPassword
-      },
-      select: {id: true}
-    })
-   
-
-
-    if(cashierExists.id){
-      return res.status(200).json(true);
+    if (changePasswordData.error) {
+      return res.status(403).json({ error: changePasswordData.error });
     }
-    else { 
-    return res.status(500).json({ error: "Something went wrong" });
-    }
- 
- 
+    return res.status(200).json(changePasswordData.data);
   } catch (error) {
     console.error("Adding cashier error", error);
     return res.status(500).json({ error: "Something went wrong" });
   }
 };
-
 
 export const deleteCashier = async (req: any, res: any) => {
   try {

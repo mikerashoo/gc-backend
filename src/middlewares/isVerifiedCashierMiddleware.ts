@@ -1,14 +1,16 @@
-import { ActiveStatus } from "@prisma/client";
+import { ActiveStatus, UserRole } from "@prisma/client";
 import db from "../lib/db";
 
 async function isVerifiedCashier(req, res, next) {
   // Check if the user is authenticated first
-  if (!req.payload) {
+
+  console.log("Is verified Cashier", req.payload)
+  if (!req.payload || !req.payload.accountId) {
     return res.status(401).json({ error: "Un-Authorized" });
   }
 
   // Check if the user's role is PROVIDER_ADMIN
-  if (!req.payload.cashierId) {
+  if (req.payload.role != UserRole.CASHIER) {
     return res
       .status(403)
       .json({ error: "Forbidden", message: "User is not valid cashier" });
@@ -16,12 +18,12 @@ async function isVerifiedCashier(req, res, next) {
 
   // Check if the user is an admin of the specified provider
   const branchId = req.payload.branchId; // Assuming the providerId is in the request params
-  const id = req.payload.cashierId;
+  const id = req.payload.accountId;
 
-  const cashierExists = await db.cashier.findFirst({
+  const cashierExists = await db.user.findFirst({
     where: {
       id,
-      branchId 
+      cashierBranchId: branchId 
     },
   });
 

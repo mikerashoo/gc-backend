@@ -135,23 +135,12 @@ const getBranchDetailById = async (
     return {
       error: "Branch With Id Not Found",
     };
-  }
-  let cashiers = await db.cashier.findMany({
-    where: {
-      branch: {
-        OR: [{ id }, { identifier: id }],
-      },
-    },
-  });
-  cashiers.forEach((cashier) => {
-    delete cashier.password;
-  });
+  } 
 
   const report = await getTicketReportsForBranches([branch.id], { start, end });
 
   const data = {
-    ...branch,
-    cashiers,
+    ...branch, 
     report,
   };
 
