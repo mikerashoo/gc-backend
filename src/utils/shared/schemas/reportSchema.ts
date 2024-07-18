@@ -14,13 +14,21 @@ export const ticketReportSchema = z.object({
 export type ITicketReportFilterSchema = z.infer<typeof ticketReportSchema>;
 
 
-export const basicReportSchema = z.object({
-  startAt: z.string().optional().nullable(),
-  endAt: z.string().optional().nullable(), 
+
+export const providerCommonQuerySchema = z.object({
   superAgentId: z.string().optional().nullable(), 
   agentId: z.string().optional().nullable(), 
   branchId: z.string().optional().nullable(), 
   cashierId: z.string().optional().nullable(), 
 });
+
+export type IProviderCommonQuerySchema = z.infer<typeof providerCommonQuerySchema>;
+
+
+export const basicReportSchema = providerCommonQuerySchema.extend({
+  startAt: z.string().optional().nullable(),
+  endAt: z.string().optional().nullable(),  
+});
+
 
 export type IBasicReportSchema = z.infer<typeof basicReportSchema>;

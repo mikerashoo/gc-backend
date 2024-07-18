@@ -1,4 +1,4 @@
-import { ActiveStatus } from "@prisma/client";
+import { ActiveStatus, UserRole } from "@prisma/client";
 import db from "../../lib/db";
 import { IServiceResponse } from "../../utils/api-helpers/serviceResponse";
 import {
@@ -16,10 +16,58 @@ import { getTicketReportsForBranches } from "../ticket-report-services";
 import ShortUniqueId = require("short-unique-id");
 
 const getProviderBranches = async (
-  providerId: string
-): Promise<IServiceResponse<IDBBranch[]>> => {
+  providerId: string,
+  agentId?: string
+): Promise<IServiceResponse<IBranchWithDetail[]>> => {
+ 
+
+  const  agentQuery = agentId ? {
+    OR: [
+      {
+        id: agentId ? agentId : {},
+      },
+      {
+        userName: agentId ? agentId : {},
+      },
+
+      {
+        superAgent: {
+          OR: [
+            {
+              id: agentId ? agentId : {},
+            },
+            {
+              userName: agentId ? agentId : {},
+            },
+          ],
+        },
+      },
+    ],
+  } : undefined
   const branches = await db.branch.findMany({
-    where: { providerId },
+    where: { providerId,
+      agent: agentQuery
+     },
+     include: {
+      agent: {
+        select: {
+          id: true,
+          userName: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          superAgent: {
+            select: {
+              id: true,
+              role: true,
+              userName: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   return {
@@ -30,9 +78,25 @@ const getProviderBranches = async (
 const addBranch = async (
   providerId: string,
   branchData: IBranchCreateSchema
-): Promise<IServiceResponse<IDBBranch>> => {
+): Promise<IServiceResponse<IBranchWithDetail>> => {
   try {
-    const { address, name } = branchData;
+    const { address, name, agentId } = branchData;
+
+    if(agentId){
+      const validSuperAgent = await db.user.findFirst({
+        where: {
+          id: agentId,
+          agentProviderId: providerId,
+          role: {in: [UserRole.SUPER_AGENT, UserRole.AGENT]}
+        },
+      });
+  
+      if (!validSuperAgent) {
+        return {
+          error: "Invalid Agent id", 
+        };
+      }
+    }
 
     const nameAlreadyTaken = await checkDBColumnDuplicate("branch", {
       providerId: providerId,
@@ -62,6 +126,26 @@ const addBranch = async (
           address,
           identifier: branchIdentifier,
           name,
+          agentId
+
+        },
+        include: {
+          agent: {
+            select: {
+              id: true,
+              userName: true,
+              firstName: true,
+              lastName: true,
+              superAgent: {
+                select: {
+                  id: true,
+                  userName: true,
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+            },
+          },
         },
       });
     } catch (error) {
@@ -78,7 +162,28 @@ const addBranch = async (
           address,
           identifier: branchIdentifier,
           name,
+          agentId
         },
+        include: {
+      agent: {
+        select: {
+          id: true,
+          userName: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          superAgent: {
+            select: {
+              id: true,
+              role: true,
+              userName: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      },
+    },
       });
     }
 
@@ -98,16 +203,18 @@ const validateBranches = async (
   branchIds: string[]
 ): Promise<IServiceResponse<boolean>> => {
   const branches = await db.branch.findMany({
-    where: { providerId: {
-      in: providerIds
-    } },
+    where: {
+      providerId: {
+        in: providerIds,
+      },
+    },
   });
 
   let providerBranchIds = branches.map((bra) => bra.id);
   const invalidBranches = branchIds.filter(
     (bId) => !providerBranchIds.includes(bId)
   );
- 
+
   if (invalidBranches.length > 0) {
     return {
       error:
@@ -115,19 +222,37 @@ const validateBranches = async (
         invalidBranches.toLocaleString(),
     };
   }
- return {
-    data: true
-  }
+  return {
+    data: true,
+  };
 };
 
 const getBranchDetailById = async (
-  id: string,
-  start?: any,
-  end?: any
+  id: string
 ): Promise<IServiceResponse<IBranchWithDetail>> => {
   const branch = await db.branch.findFirst({
     where: {
       OR: [{ id }, { identifier: id }],
+    },
+    include: {
+      agent: {
+        select: {
+          id: true,
+          userName: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          superAgent: {
+            select: {
+              id: true,
+              role: true,
+              userName: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -135,17 +260,10 @@ const getBranchDetailById = async (
     return {
       error: "Branch With Id Not Found",
     };
-  } 
-
-  const report = await getTicketReportsForBranches([branch.id], { start, end });
-
-  const data = {
-    ...branch, 
-    report,
-  };
+  }
 
   return {
-    data,
+    data: branch,
   };
 };
 
@@ -153,7 +271,7 @@ const updateBranch = async (
   branchUpdateData: IBranchUpdateSchema,
   branchId: string,
   providerId: string
-): Promise<IServiceResponse<IDBBranch>> => {
+): Promise<IServiceResponse<IBranchWithDetail>> => {
   const { address, name, status } = branchUpdateData;
 
   if (name) {
@@ -181,6 +299,26 @@ const updateBranch = async (
       address,
       name,
       status: status,
+    },
+    include: {
+      agent: {
+        select: {
+          id: true,
+          userName: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          superAgent: {
+            select: {
+              id: true,
+              role: true,
+              userName: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      },
     },
   });
   return {

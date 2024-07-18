@@ -88,7 +88,10 @@ async function isVerifiedProviderAdmin(req, res, next) {
         message: "Agent doesn't exist under given provider",
       });
     }
- 
+    req.payload = {
+      ...req.payload,
+      queryAgentId: agentId
+    };
 
   }
 

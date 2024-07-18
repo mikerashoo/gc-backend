@@ -107,34 +107,6 @@ const addCashier = async (
   }
 };
 
-const getBranchDetailById = async (
-  id: string,
-  start?: any,
-  end?: any
-): Promise<IServiceResponse<IBranchWithDetail>> => {
-  const branch = await db.branch.findFirst({
-    where: {
-      OR: [{ id }, { identifier: id }],
-    },
-  });
-
-  if (!branch) {
-    return {
-      error: "Branch With Id Not Found",
-    };
-  } 
-
-  const report = await getTicketReportsForBranches([id], { start, end });
-
-  const data = {
-    ...branch, 
-    report,
-  };
-
-  return {
-    data,
-  };
-};
 
 const updateCashier = async (
   cashierId: string,
@@ -194,8 +166,7 @@ const deleteCashier = async (
 };
 
 export const ProviderBranchCashierService = {
-  list: getBranchCashier,
-  detail: getBranchDetailById,
+  list: getBranchCashier, 
   add: addCashier,
   validate: validateCashiers,
   update: updateCashier,

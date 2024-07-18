@@ -2,6 +2,7 @@ import { ActiveStatus } from "@prisma/client";
 import { IDBBranch } from "./prisma-models";
 import {  ICashier } from "./userModels";
 import { ICashierReport } from "./gameModels";
+import { IAgentWithSuperAgent } from "./agentModels";
 
  
 
@@ -35,6 +36,7 @@ export interface IProvider {
 
 
   export interface IBranchWithDetail extends IDBBranch { 
-    report: ICashierReport
+    agent: IAgentWithSuperAgent
    
   }
+ 
