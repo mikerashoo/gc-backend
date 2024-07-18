@@ -6,7 +6,7 @@ import { ticketDetailInclude } from '../../services/keno/ticketLogics';
 
 export const getReportForCashier = async (req: any, res: any) => {
   try {
-    const branchId = req.payload.branchId;
+    const shopId = req.payload.shopId;
     const cashierId = req.payload.accountId;
     const { start, end } = req.query;
 
@@ -23,7 +23,7 @@ export const getReportForCashier = async (req: any, res: any) => {
       where: {
         cashierId,
         game: {
-          branchId,
+          shopId,
         },
         createdAt: {
           gte: startDate,
@@ -51,7 +51,7 @@ export const getReportForCashier = async (req: any, res: any) => {
         ticket: {
           status: TicketStatus.PAID,
           game: {
-            branchId,
+            shopId,
           },
           payment: {
             cashierId,

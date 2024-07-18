@@ -1,7 +1,7 @@
 /*
   Warnings:
 
-  - You are about to drop the column `branchId` on the `KenoGame` table. All the data in the column will be lost.
+  - You are about to drop the column `shopId` on the `KenoGame` table. All the data in the column will be lost.
   - You are about to drop the column `createdAt` on the `KenoGame` table. All the data in the column will be lost.
   - You are about to drop the column `endAt` on the `KenoGame` table. All the data in the column will be lost.
   - You are about to drop the column `kenoGameId` on the `KenoGame` table. All the data in the column will be lost.
@@ -21,7 +21,7 @@ CREATE TYPE "GameStatus" AS ENUM ('NOT_STARTED', 'ON_PLAY', 'DONE');
 CREATE TYPE "GameType" AS ENUM ('KENO', 'DOG_RACING', 'HORSE_RASING');
 
 -- DropForeignKey
-ALTER TABLE "KenoGame" DROP CONSTRAINT "KenoGame_branchId_fkey";
+ALTER TABLE "KenoGame" DROP CONSTRAINT "KenoGame_shopId_fkey";
 
 -- DropForeignKey
 ALTER TABLE "Ticket" DROP CONSTRAINT "Ticket_gameId_fkey";
@@ -30,7 +30,7 @@ ALTER TABLE "Ticket" DROP CONSTRAINT "Ticket_gameId_fkey";
 ALTER TABLE "TicketSelection" DROP CONSTRAINT "TicketSelection_ticketId_fkey";
 
 -- AlterTable
-ALTER TABLE "KenoGame" DROP COLUMN "branchId",
+ALTER TABLE "KenoGame" DROP COLUMN "shopId",
 DROP COLUMN "createdAt",
 DROP COLUMN "endAt",
 DROP COLUMN "kenoGameId",
@@ -50,7 +50,7 @@ DROP TYPE "KenoGameStatus";
 CREATE TABLE "Game" (
     "id" TEXT NOT NULL,
     "uniqueId" TEXT NOT NULL,
-    "branchId" TEXT NOT NULL,
+    "shopId" TEXT NOT NULL,
     "gameType" "GameType" NOT NULL,
     "startAt" TIMESTAMP(3) NOT NULL,
     "endAt" TIMESTAMP(3) NOT NULL,
@@ -101,7 +101,7 @@ CREATE UNIQUE INDEX "DogRacingTicket_ticketId_key" ON "DogRacingTicket"("ticketI
 CREATE UNIQUE INDEX "KenoGame_gameId_key" ON "KenoGame"("gameId");
 
 -- AddForeignKey
-ALTER TABLE "Game" ADD CONSTRAINT "Game_branchId_fkey" FOREIGN KEY ("branchId") REFERENCES "Branch"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Game" ADD CONSTRAINT "Game_shopId_fkey" FOREIGN KEY ("shopId") REFERENCES "Shop"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Ticket" ADD CONSTRAINT "Ticket_gameId_fkey" FOREIGN KEY ("gameId") REFERENCES "Game"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -27,7 +27,7 @@ export async function isValidCashierForProvider(req, res, next) {
     where: {
       id: cashierId, 
     
-      cashierBranch: {
+      cashierShop: {
         providerId,
 
       }

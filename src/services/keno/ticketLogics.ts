@@ -6,7 +6,7 @@ import { IKenoTicket } from "../../utils/shared/shared-types/keno";
 export const ticketDetailInclude = {
   game: {
     include: {
-      branch: true,
+      shop: true,
       keno: true,
       dogRacing: true,
     },

@@ -9,7 +9,7 @@ providerSpecificSuperAgentRoutes.get('/info',  getSuperAgentInfo);
 providerSpecificSuperAgentRoutes.get('/report',  getSuperAgentReport); 
 
 providerSpecificSuperAgentRoutes.post('/update',  updateSuperAgent);  
-// providerSpecificSuperAgentRoutes.get('/detail',  getBranchDetail);  
+// providerSpecificSuperAgentRoutes.get('/detail',  getShopDetail);  
 providerSpecificSuperAgentRoutes.delete('/delete',  deleteSuperAgent); 
 providerSpecificSuperAgentRoutes.get('/change-status',  changeSuperAgentStatus); 
 providerSpecificSuperAgentRoutes.post('/change-password',  changeSuperAgentPassword);    

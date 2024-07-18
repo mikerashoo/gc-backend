@@ -8,7 +8,7 @@
 ALTER TYPE "TicketSelectionStatus" ADD VALUE 'PAID';
 
 -- DropForeignKey
-ALTER TABLE "Cashier" DROP CONSTRAINT "Cashier_branchId_fkey";
+ALTER TABLE "Cashier" DROP CONSTRAINT "Cashier_shopId_fkey";
 
 -- DropForeignKey
 ALTER TABLE "Cashier" DROP CONSTRAINT "Cashier_userId_fkey";
@@ -39,7 +39,7 @@ CREATE TABLE "Cashier" (
     "status" "ActiveStatus" NOT NULL DEFAULT 'ACTIVE',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "branchId" TEXT NOT NULL,
+    "shopId" TEXT NOT NULL,
 
     CONSTRAINT "Cashier_pkey" PRIMARY KEY ("id")
 );
@@ -51,7 +51,7 @@ CREATE UNIQUE INDEX "Cashier_id_key" ON "Cashier"("id");
 CREATE UNIQUE INDEX "Cashier_userName_key" ON "Cashier"("userName");
 
 -- AddForeignKey
-ALTER TABLE "Cashier" ADD CONSTRAINT "Cashier_branchId_fkey" FOREIGN KEY ("branchId") REFERENCES "Branch"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Cashier" ADD CONSTRAINT "Cashier_shopId_fkey" FOREIGN KEY ("shopId") REFERENCES "Shop"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "RefreshToken" ADD CONSTRAINT "RefreshToken_cashierId_fkey" FOREIGN KEY ("cashierId") REFERENCES "Cashier"("id") ON DELETE CASCADE ON UPDATE CASCADE;

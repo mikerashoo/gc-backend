@@ -1,6 +1,6 @@
 import bcrypt = require("bcrypt");
 
-import { Branch, Provider, User, UserRole} from "@prisma/client";
+import { Shop, Provider, User, UserRole} from "@prisma/client";
 import db from "../src/lib/db";
 const adminEmail = "mkbirhanu@gmail.com";
 const adminPassword = "11221122";
@@ -11,8 +11,8 @@ const adminPhoneNumber = "0923213768";
 async function main() {
   const superAdmin = await addSuperAdmin();
   const provider = await addTestProviderAndAdminAdmin(); 
-  const branch = await addTestProviderBranch(provider.id);
- await addTestCashierFOrBranch(branch.id);
+  const shop = await addTestProviderShop(provider.id);
+ await addTestCashierFOrShop(shop.id);
 
 }
 
@@ -43,6 +43,14 @@ const addSuperAdmin = async (): Promise<User> => {
 const addTestProviderAndAdminAdmin = async (): Promise<Provider> => {
   const password = await bcrypt.hash("jegna@bg", 10);
 
+  let provider = await db.provider.findFirst({
+    where: {
+      identifier: "apollo-bet",
+    }
+  })
+
+  if(provider) return provider
+
   return await db.provider.create({
     data: {
       name: "Apollo Bet",
@@ -62,18 +70,34 @@ const addTestProviderAndAdminAdmin = async (): Promise<Provider> => {
     },
   });
 }; 
-const addTestProviderBranch = async (providerId: string): Promise<Branch> => {
-  return await db.branch.create({
+const addTestProviderShop = async (providerId: string): Promise<Shop> => {
+
+  let shop = await db.shop.findFirst({
+    where: {
+      identifier: "apollo-shop-1",
+    }
+  })
+
+  if(shop) return shop
+  return await db.shop.create({
     data: {
-      name: "Apollo Branch 1",
-      identifier: "apollo-branch-1",
+      name: "Apollo Shop 1",
+      identifier: "apollo-shop-1",
       address: "Bole Sheger Building",
       providerId: providerId,
     },
   });
 };
 
-const addTestCashierFOrBranch = async (branchId: string): Promise<User> => {
+const addTestCashierFOrShop = async (shopId: string): Promise<User> => {
+
+  let user = await db.user.findFirst({
+    where: {
+      userName: "cashier@apollo",
+    }
+  })
+
+  if(user) return user
   const password = await bcrypt.hash("12345678", 10);
 
   return await db.user.create({
@@ -81,7 +105,7 @@ const addTestCashierFOrBranch = async (branchId: string): Promise<User> => {
       firstName: "Bethelihem",
       lastName: "Tekile",
       phoneNumber: "0909091133", 
-       cashierBranchId: branchId,
+       cashierShopId: shopId,
        role: UserRole.CASHIER,
       password,
       userName: "cashier@apollo",

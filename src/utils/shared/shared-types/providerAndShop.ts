@@ -1,10 +1,8 @@
 import { ActiveStatus } from "@prisma/client";
-import { IDBBranch } from "./prisma-models";
-import {  ICashier } from "./userModels";
-import { ICashierReport } from "./gameModels";
+import { IDBShop } from "./prisma-models"; 
 import { IAgentWithSuperAgent } from "./agentModels";
 
- 
+
 
  
 // providers
@@ -19,8 +17,8 @@ export interface IProvider {
     updatedAt     :Date;         
   }
   
-  // branch
-  export interface IBranch {
+  // shop
+  export interface IShop {
     id       :string;
     identifier : string;
     name: string; 
@@ -35,7 +33,7 @@ export interface IProvider {
   }
 
 
-  export interface IBranchWithDetail extends IDBBranch { 
+  export interface IShopWithDetail extends IDBShop { 
     agent: IAgentWithSuperAgent
    
   }

@@ -1,16 +1,16 @@
 import bcrypt = require("bcrypt");
-import { ProviderBranchCashierService } from "../../services/providers/provider-cashier-services";
+import { ProviderShopCashierService } from "../../services/providers/provider-cashier-services";
 import db from "../../lib/db";
 import { ActiveStatus } from "@prisma/client";
 import { IChangePasswordSchema } from "../../utils/shared/schemas/userSchemas";
 import { date } from "zod";
 import { CommonUserManagementService } from "../../services/user-services";
 
-export const getCashiersBranch = async (req: any, res: any) => {
+export const getCashiersShop = async (req: any, res: any) => {
   try {
-    const branchId = req.params.branchId;
+    const shopId = req.params.shopId;
 
-    const cashiers = await ProviderBranchCashierService.list(branchId);
+    const cashiers = await ProviderShopCashierService.list(shopId);
     if (cashiers.error) {
       return res.status(403).json({ error: cashiers.error });
     }
@@ -22,12 +22,12 @@ export const getCashiersBranch = async (req: any, res: any) => {
   }
 };
 
-export const addCashierToBranch = async (req: any, res: any) => {
+export const addCashierToShop = async (req: any, res: any) => {
   try {
-    const branchId = req.params.branchId;
+    const shopId = req.params.shopId;
 
-    const addCashier = await ProviderBranchCashierService.add(
-      branchId,
+    const addCashier = await ProviderShopCashierService.add(
+      shopId,
       req.body
     );
     if (addCashier.error) {
@@ -45,7 +45,7 @@ export const updateCashier = async (req: any, res: any) => {
   try {
     const cashierId = req.params.cashierId;
 
-    const addCashier = await ProviderBranchCashierService.update(
+    const addCashier = await ProviderShopCashierService.update(
       cashierId,
       req.body
     );
@@ -99,12 +99,12 @@ export const changeCashierPassword = async (req: any, res: any) => {
 
 export const deleteCashier = async (req: any, res: any) => {
   try {
-    const branchId = req.params.branchId;
+    const shopId = req.params.shopId;
     const cashierId = req.params.cashierId;
 
-    const deleteCashier = await ProviderBranchCashierService.delete(
+    const deleteCashier = await ProviderShopCashierService.delete(
       cashierId,
-      branchId
+      shopId
     );
     if (deleteCashier.error) {
       return res.status(403).json({ error: deleteCashier.error });

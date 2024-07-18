@@ -18,7 +18,7 @@ db.$use(
     models: {
       User: true,
       Provider: true, 
-      Branch: true, 
+      Shop: true, 
     },
     defaultConfig: {
       field: "deletedAt",

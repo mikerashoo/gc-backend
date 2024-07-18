@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'PROVIDER_ADMIN', 'BRANCH_ADMIN', 'CASHIER');
+CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'PROVIDER_ADMIN', 'SHOP_ADMIN', 'CASHIER');
 
 -- CreateEnum
 CREATE TYPE "ActiveStatus" AS ENUM ('ACTIVE', 'IN_ACTIVE');
@@ -52,7 +52,7 @@ CREATE TABLE "Provider" (
 );
 
 -- CreateTable
-CREATE TABLE "Branch" (
+CREATE TABLE "Shop" (
     "id" TEXT NOT NULL,
     "identifier" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -62,7 +62,7 @@ CREATE TABLE "Branch" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Branch_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Shop_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -70,7 +70,7 @@ CREATE TABLE "KenoGame" (
     "id" TEXT NOT NULL,
     "kenoGameId" TEXT NOT NULL,
     "status" "KenoGameStatus" NOT NULL DEFAULT 'NOT_STARTED',
-    "branchId" TEXT NOT NULL,
+    "shopId" TEXT NOT NULL,
     "winningNumbers" INTEGER[],
     "startAt" TIMESTAMP(3) NOT NULL,
     "ticketWillBeDisabledAt" TIMESTAMP(3) NOT NULL,
@@ -104,7 +104,7 @@ CREATE TABLE "_ProviderToUser" (
 );
 
 -- CreateTable
-CREATE TABLE "_BranchToUser" (
+CREATE TABLE "_ShopToUser" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL
 );
@@ -125,7 +125,7 @@ CREATE UNIQUE INDEX "RefreshToken_id_key" ON "RefreshToken"("id");
 CREATE UNIQUE INDEX "Provider_identifier_key" ON "Provider"("identifier");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Branch_identifier_key" ON "Branch"("identifier");
+CREATE UNIQUE INDEX "Shop_identifier_key" ON "Shop"("identifier");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_ProviderToUser_AB_unique" ON "_ProviderToUser"("A", "B");
@@ -134,19 +134,19 @@ CREATE UNIQUE INDEX "_ProviderToUser_AB_unique" ON "_ProviderToUser"("A", "B");
 CREATE INDEX "_ProviderToUser_B_index" ON "_ProviderToUser"("B");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_BranchToUser_AB_unique" ON "_BranchToUser"("A", "B");
+CREATE UNIQUE INDEX "_ShopToUser_AB_unique" ON "_ShopToUser"("A", "B");
 
 -- CreateIndex
-CREATE INDEX "_BranchToUser_B_index" ON "_BranchToUser"("B");
+CREATE INDEX "_ShopToUser_B_index" ON "_ShopToUser"("B");
 
 -- AddForeignKey
 ALTER TABLE "RefreshToken" ADD CONSTRAINT "RefreshToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Branch" ADD CONSTRAINT "Branch_providerId_fkey" FOREIGN KEY ("providerId") REFERENCES "Provider"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Shop" ADD CONSTRAINT "Shop_providerId_fkey" FOREIGN KEY ("providerId") REFERENCES "Provider"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "KenoGame" ADD CONSTRAINT "KenoGame_branchId_fkey" FOREIGN KEY ("branchId") REFERENCES "Branch"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "KenoGame" ADD CONSTRAINT "KenoGame_shopId_fkey" FOREIGN KEY ("shopId") REFERENCES "Shop"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Ticket" ADD CONSTRAINT "Ticket_gameId_fkey" FOREIGN KEY ("gameId") REFERENCES "KenoGame"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -161,7 +161,7 @@ ALTER TABLE "_ProviderToUser" ADD CONSTRAINT "_ProviderToUser_A_fkey" FOREIGN KE
 ALTER TABLE "_ProviderToUser" ADD CONSTRAINT "_ProviderToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_BranchToUser" ADD CONSTRAINT "_BranchToUser_A_fkey" FOREIGN KEY ("A") REFERENCES "Branch"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_ShopToUser" ADD CONSTRAINT "_ShopToUser_A_fkey" FOREIGN KEY ("A") REFERENCES "Shop"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_BranchToUser" ADD CONSTRAINT "_BranchToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_ShopToUser" ADD CONSTRAINT "_ShopToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

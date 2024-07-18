@@ -7,11 +7,11 @@ import {
 } from "../../utils/api-helpers/unique-identifier-generator";
 import { IUser } from "../../utils/shared/shared-types/userModels";
 import {
-  IAgentRegistrationSchema,
+  IAgentRegistrationSchema, 
   IUserUpdateSchema,
 } from "../../utils/shared/schemas/userSchemas";
 import bcrypt = require("bcrypt");
-import { ISuperAgentInfo } from "../../utils/shared/shared-types/agentModels";
+import { IAgentWithSuperAgent, ISuperAgentInfo } from "../../utils/shared/shared-types/agentModels";
 import { startOfDay, endOfDay } from "date-fns";
 import {
   IBasicReportSchema,
@@ -20,11 +20,27 @@ import {
   ICommonReport,
 } from "../../utils/shared/shared-types/reportModels";
 
-const getSuperAgents = async (
+export const agentSimpleInfoQuery = {
+    id: true,
+    userName: true,
+    firstName: true,
+    lastName: true,
+    role: true,
+    superAgent: {
+      select: {
+        id: true,
+        role: true,
+        userName: true,
+        firstName: true,
+        lastName: true,
+      },
+    },
+  }
+const getAgents = async (
   providerId: string
 ): Promise<IServiceResponse<IUser[]>> => {
   const superAgents = await db.user.findMany({
-    where: { agentProviderId: providerId, role: UserRole.SUPER_AGENT },
+    where: { agentProviderId: providerId, role: UserRole.AGENT },
   });
 
   return {
@@ -32,12 +48,26 @@ const getSuperAgents = async (
   };
 };
 
+
+const getAgentAndSuperAgents = async (
+    providerId: string
+  ): Promise<IServiceResponse<IAgentWithSuperAgent[]>> => {
+    const superAgents = await db.user.findMany({
+      where: { agentProviderId: providerId },
+      select: agentSimpleInfoQuery
+    });
+  
+    return {
+      data: superAgents,
+    };
+  };
+
 const addSuperAgent = async (
   providerId: string,
   superAgentData: IAgentRegistrationSchema
 ): Promise<IServiceResponse<IUser>> => {
   try {
-    const { firstName, lastName, password, phoneNumber, userName } =
+    const { firstName, lastName, password, phoneNumber, userName, isSuperAgent } =
       superAgentData;
 
     const userNameTaken = await checkUserNameTaken(userName);
@@ -48,7 +78,7 @@ const addSuperAgent = async (
     }
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const superAgent = await db.user.create({
+    const cashier = await db.user.create({
       data: {
         agentProviderId: providerId,
         firstName,
@@ -56,12 +86,12 @@ const addSuperAgent = async (
         password: hashedPassword,
         userName,
         phoneNumber,
-        role: UserRole.SUPER_AGENT,
+        role: isSuperAgent ? UserRole.SUPER_AGENT : UserRole.AGENT,
       },
     });
 
     return {
-      data: superAgent,
+      data: cashier,
     };
   } catch (error) {
     console.log("Error while adding super agent", error);
@@ -286,8 +316,9 @@ const getReports = async (
   };
 };
 
-export const ProviderSuperAgentManagementService = {
-  list: getSuperAgents,
+export const ProviderAgentManagementService = {
+  list: getAgents,
+  agentsAndSuperAgents: getAgentAndSuperAgents,
   add: addSuperAgent,
   update: updateAgent,
   info: getSuperAgentInfo,

@@ -1,13 +1,13 @@
-import { ProviderSuperAgentManagementService } from "../../services/providers/provider-super-agent-service";
+import { ProviderAgentManagementService } from "../../services/providers/provider-agent-services";
 import { CommonUserManagementService } from "../../services/user-services";
 
 
-export const getProviderSuperAgents = async (req: any, res: any) => {
+export const getProviderAgents = async (req: any, res: any) => {
   try {
     const providerId = req.payload.providerId;
 
 
-    const superAgentsData = await ProviderSuperAgentManagementService.list(providerId);
+    const superAgentsData = await ProviderAgentManagementService.list(providerId);
     if(superAgentsData.error){
       return res.status(403).json({ error:superAgentsData.error });
 
@@ -20,13 +20,30 @@ export const getProviderSuperAgents = async (req: any, res: any) => {
   }
 };
 
+export const getProviderAgentsSimpleInfoList = async (req: any, res: any) => {
+  try {
+    const providerId = req.payload.providerId;
+
+
+    const superAgentsData = await ProviderAgentManagementService.agentsAndSuperAgents(providerId);
+    if(superAgentsData.error){
+      return res.status(403).json({ error:superAgentsData.error });
+
+    }
+
+    return res.status(200).json(superAgentsData.data);
+  } catch (error) {
+    console.error("Error fetching shops", error);
+    return res.status(500).json({ error: "Failed to fetch shops" });
+  }
+};
 
 export const getSuperAgentInfo = async (req: any, res: any) => {
   try { 
     const superAgentId = req.params.superAgentId;
     const providerId = req.payload.providerId;
 
-    const superAgentInfo = await ProviderSuperAgentManagementService.info( superAgentId, providerId);
+    const superAgentInfo = await ProviderAgentManagementService.info( superAgentId, providerId);
     if (superAgentInfo.error) {
       return res.status(403).json({ error: superAgentInfo.error});
     } 
@@ -43,7 +60,7 @@ export const getSuperAgentReport = async (req: any, res: any) => {
   try { 
     const superAgentId = req.params.superAgentId; 
 
-    const superAgentInfo = await ProviderSuperAgentManagementService.reports( superAgentId, req.query);
+    const superAgentInfo = await ProviderAgentManagementService.reports( superAgentId, req.query);
     if (superAgentInfo.error) {
       return res.status(403).json({ error: superAgentInfo.error});
     } 
@@ -54,20 +71,18 @@ export const getSuperAgentReport = async (req: any, res: any) => {
   }
 };
 
-export const addSuperAgent = async (req: any, res: any) => {
+export const addAgent = async (req: any, res: any) => {
   try {
     const providerId = req.payload.providerId;
 
-    const addSuperAgentsData = await ProviderSuperAgentManagementService.add(providerId, req.body);
+    const addAgentData = await ProviderAgentManagementService.add(providerId, req.body);
  
-    if(addSuperAgentsData.error){
-      return res.status(403).json({ error:addSuperAgentsData.error });
+    if(addAgentData.error){
+      return res.status(403).json({ error:addAgentData.error });
 
-    } 
+    }  
 
-    console.log("Add super agent data", addSuperAgentsData)
-
-    return res.status(200).json(addSuperAgentsData.data);
+    return res.status(200).json(addAgentData.data);
   } catch (error) {
     console.error("Error fetching shops", error);
     return res.status(500).json({ error: "Failed to fetch shops" });

@@ -3,7 +3,8 @@
     "types": ["node"],
     
     "target": "es2016",       
-    "module": "commonjs",                              
+    "module": "commonjs",       
+                           
   },
   "exclude": ["node_modules"],
   "include": [ "**/*.ts"],

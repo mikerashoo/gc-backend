@@ -17,13 +17,13 @@ async function isVerifiedCashier(req, res, next) {
   }
 
   // Check if the user is an admin of the specified provider
-  const branchId = req.payload.branchId; // Assuming the providerId is in the request params
+  const shopId = req.payload.shopId; // Assuming the providerId is in the request params
   const id = req.payload.accountId;
 
   const cashierExists = await db.user.findFirst({
     where: {
       id,
-      cashierBranchId: branchId 
+      cashierShopId: shopId 
     },
   });
 

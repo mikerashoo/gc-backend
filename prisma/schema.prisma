@@ -64,11 +64,11 @@ model User {
   agents         User[]     @relation("AgentToAgents")
   agentProviderId String?
   agentProvider   Provider?  @relation("ProviderAgents", fields: [agentProviderId], references: [id], onDelete: Cascade)
-  agentBranches         Branch[] @relation("BranchAgent")
+  agentShops         Shop[] @relation("ShopAgent")
 
   // cashier relations
-  cashierBranchId   String?
-  cashierBranch         Branch?          @relation("CashierBranch", fields: [cashierBranchId], references: [id], onDelete: Cascade)
+  cashierShopId   String?
+  cashierShop         Shop?          @relation("CashierShop", fields: [cashierShopId], references: [id], onDelete: Cascade)
   tickets        Ticket[] 
   cancelledTickets        Ticket[] @relation(name: "cancelledTickets")
   ticketPayments TicketPayment[]
@@ -107,15 +107,15 @@ model Provider {
    deletedAt DateTime?        
   deleted Boolean @default(false)
   
-  branches  Branch[]
+  shops  Shop[]
   
    // Relations with Users
   admins     User[]     @relation("ProviderAdmins")
   agents     User[]     @relation("ProviderAgents")
 }
 
-// branch
-model Branch {
+// shop
+model Shop {
   id         String @id @default(cuid())
   identifier String @unique
   name       String
@@ -131,9 +131,9 @@ model Branch {
   provider  Provider         @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   agentId String?
-  agent  User?         @relation("BranchAgent", fields: [agentId], references: [id], onDelete: Cascade)
+  agent  User?         @relation("ShopAgent", fields: [agentId], references: [id], onDelete: Cascade)
 
-  cashiers  User[] @relation("CashierBranch")
+  cashiers  User[] @relation("CashierShop")
   games     Game[]
 }
 
@@ -170,7 +170,7 @@ enum TicketSelectionStatus {
 model Game {
   id       String     @id @default(cuid())
   uniqueId String
-  branchId String
+  shopId String
   gameType GameType
   startAt  DateTime
   endAt    DateTime
@@ -180,7 +180,7 @@ model Game {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  branch    Branch         @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  shop    Shop         @relation(fields: [shopId], references: [id], onDelete: Cascade)
   tickets   Ticket[]
   keno      KenoGame?
   dogRacing DogRacingGame? // Add other game relations here

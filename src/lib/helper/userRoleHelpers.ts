@@ -13,7 +13,7 @@ export const getLoginDataBasedOnRole  = async (user: IUser, token: ITokenData) =
  
     if(isProvider(user.role)){
         delete user.agentProvider;
-        delete user.cashierBranch;
+        delete user.cashierShop;
         
         const providerLoginData: IProviderSiteLoginData = {
             ...user,
@@ -29,7 +29,7 @@ export const getLoginDataBasedOnRole  = async (user: IUser, token: ITokenData) =
         
         const cashierLoginData: ICashierLoginData = {
             ...user, 
-            branch: user.cashierBranch ?? null,
+            shop: user.cashierShop ?? null,
             ...token
         }
         return cashierLoginData;

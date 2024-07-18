@@ -95,21 +95,21 @@ async function isVerifiedProviderAdmin(req, res, next) {
 
   }
 
-  // validating branch Id
-  const branchId = req.query.branchId ?? req.params.branchId;
+  // validating shop Id
+  const shopId = req.query.shopId ?? req.params.shopId;
 
-  if (branchId) {
-    const validBranch = await db.branch.findFirst({
+  if (shopId) {
+    const validShop = await db.shop.findFirst({
       where: {
-        OR: [{ id: branchId }, { identifier: branchId }],
+        OR: [{ id: shopId }, { identifier: shopId }],
         providerId,
       },
     });
 
-    if (!validBranch) {
+    if (!validShop) {
       return res.status(403).json({
-        error: "Invalid branch id",
-        message: "Branch doesn't exist under given provider",
+        error: "Invalid shop id",
+        message: "Shop doesn't exist under given provider",
       });
     }
   }
@@ -127,8 +127,8 @@ async function isVerifiedProviderAdmin(req, res, next) {
 
     if (!validCashier) {
       return res.status(403).json({
-        error: "Invalid branch id",
-        message: "Branch doesn't exist under given provider",
+        error: "Invalid shop id",
+        message: "Shop doesn't exist under given provider",
       });
     } 
   } 

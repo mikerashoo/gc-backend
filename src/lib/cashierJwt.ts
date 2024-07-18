@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 
 // Usually I keep the token between 5 minutes - 15 minutes
 function generateCashierAccessToken(cashier) {
-  return jwt.sign({ cashierId: cashier.id, branchId: cashier.branchId }, process.env.JWT_ACCESS_SECRET, {
+  return jwt.sign({ cashierId: cashier.id, shopId: cashier.shopId }, process.env.JWT_ACCESS_SECRET, {
     expiresIn: '30d',
   });
 }
@@ -14,7 +14,7 @@ function generateCashierAccessToken(cashier) {
 function generateCashierRefreshToken(cashier, jti) {
   return jwt.sign({
     cashierId: cashier.id,
-    branchId: cashier.branchId,
+    shopId: cashier.shopId,
     jti
   }, process.env.JWT_REFRESH_SECRET, {
     expiresIn: '365d',

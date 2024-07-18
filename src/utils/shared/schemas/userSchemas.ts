@@ -1,4 +1,6 @@
+import { UserRole } from '@prisma/client';
 import { z } from 'zod';
+import { getValues } from '../../common-helper';
  
 
 // Regular expressions for Ethiopian phone numbers
@@ -34,7 +36,8 @@ const lastNameSchema = baseNameSchema.regex(/^[A-Za-z]+(-[A-Za-z]+)*$/, "Last na
 const userNameSchema = z.string()
   .min(3, "Username must be at least 3 characters long")
   .max(30, "Username must not exceed 30 characters")
-  .regex(/^[A-Za-z0-9_-]+$/, "Username can only contain letters, numbers, underscores, and hyphens");
+  .regex(/^\S+$/, "Username should have no spaces");
+  
  
 
 export const commonUserRegisterSchema = z.object({
@@ -46,10 +49,16 @@ export const commonUserRegisterSchema = z.object({
   email: z.string().email().optional().nullable(),
 });
 
-export const superAgentRegistrationSchema = commonUserRegisterSchema.extend({})
+
+export const agentRegistrationSchema = commonUserRegisterSchema.extend({
+  isSuperAgent: z.boolean().optional().nullable().default(false), 
+})
 
 
-export type ISuperAgentRegisterSchema = z.infer<typeof superAgentRegistrationSchema>; 
+export type IAgentRegistrationSchema = z.infer<typeof agentRegistrationSchema>; 
+ 
+
+ 
 
 
 export const userUpdateSchema = z.object({ 
@@ -85,7 +94,7 @@ export type ICashierUpdateSchema = z.infer<typeof cashierUpdateSchema>;
 
 
 export const cashierREgisterSchema = commonUserRegisterSchema.extend({ 
-  // branchId: z.string(), 
+  // shopId: z.string(), 
 });
 export type ICashierRegisterSchema = z.infer<typeof cashierREgisterSchema>; 
 

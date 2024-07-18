@@ -20,7 +20,7 @@ export interface IDBUser {
   superAgentId: string  | null;
   agentProviderId: string  | null;
   //: cashier ;
-  cashierBranchId: string  | null;
+  cashierShopId: string  | null;
 }
 
 export interface IDBUserWithRelations {
@@ -46,10 +46,10 @@ export interface IDBUserWithRelations {
   agents: IDBUser[];
   agentProviderId?: string;
   agentProvider?: IDBProvider;
-  agentBranches: IDBBranch[];
+  agentShops: IDBShop[];
   //: cashier;
-  cashierBranchId?: string;
-  cashierBranch?: IDBBranch;
+  cashierShopId?: string;
+  cashierShop?: IDBShop;
   tickets: IDBTicket[];
   cancelledTickets: IDBTicket[];
   ticketPayments: IDBTicketPayment[];
@@ -97,13 +97,13 @@ export interface IDBProviderWithRelations {
   updatedAt: Date;
   deletedAt?: Date;
   deleted: boolean;
-  branches: IDBBranch[];
+  shops: IDBShop[];
   //: Relations;
   admins: IDBUser[];
   agents: IDBUser[];
 }
 
-export interface IDBBranch {
+export interface IDBShop {
   id: string ;
   identifier: string ;
   name: string ;
@@ -117,7 +117,7 @@ export interface IDBBranch {
   agentId: string  | null;
 }
 
-export interface IDBBranchWithRelations {
+export interface IDBShopWithRelations {
   id: string;
   identifier: string;
   name: string;
@@ -138,7 +138,7 @@ export interface IDBBranchWithRelations {
 export interface IDBGame {
   id: string ;
   uniqueId: string ;
-  branchId: string ;
+  shopId: string ;
   gameType: GameType ;
   startAt: Date ;
   endAt: Date ;
@@ -150,14 +150,14 @@ export interface IDBGame {
 export interface IDBGameWithRelations {
   id: string;
   uniqueId: string;
-  branchId: string;
+  shopId: string;
   gameType: GameType;
   startAt: Date;
   endAt: Date;
   status: GameStatus;
   createdAt: Date;
   updatedAt: Date;
-  branch: IDBBranch;
+  shop: IDBShop;
   tickets: IDBTicket[];
   keno?: IDBKenoGame;
   dogRacing?: IDBDogRacingGame;

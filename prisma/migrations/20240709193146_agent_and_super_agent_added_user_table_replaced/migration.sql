@@ -1,7 +1,7 @@
 /*
   Warnings:
 
-  - The values [BRANCH_ADMIN,CASHIER] on the enum `UserRole` will be removed. If these variants are still used in the database, this will fail.
+  - The values [SHOP_ADMIN,CASHIER] on the enum `UserRole` will be removed. If these variants are still used in the database, this will fail.
   - You are about to drop the column `providerAdminId` on the `RefreshToken` table. All the data in the column will be lost.
   - You are about to drop the `ProviderAdmin` table. If the table is not empty, all the data it contains will be lost.
 
@@ -31,7 +31,7 @@ DROP INDEX "User_email_key";
 DROP INDEX "User_phoneNumber_key";
 
 -- AlterTable
-ALTER TABLE "Branch" ADD COLUMN     "agentId" TEXT;
+ALTER TABLE "Shop" ADD COLUMN     "agentId" TEXT;
 
 -- AlterTable
 ALTER TABLE "RefreshToken" DROP COLUMN "providerAdminId";
@@ -54,4 +54,4 @@ ALTER TABLE "User" ADD CONSTRAINT "User_superAgentId_fkey" FOREIGN KEY ("superAg
 ALTER TABLE "User" ADD CONSTRAINT "User_agentProviderId_fkey" FOREIGN KEY ("agentProviderId") REFERENCES "Provider"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Branch" ADD CONSTRAINT "Branch_agentId_fkey" FOREIGN KEY ("agentId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Shop" ADD CONSTRAINT "Shop_agentId_fkey" FOREIGN KEY ("agentId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

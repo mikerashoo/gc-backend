@@ -25,23 +25,23 @@ export const getKenoGameConfigurations = async (req: any, res: any) => {
   }
 };
 
-export const currentKenoGameOfBranch = async (req: any, res: any) => {
+export const currentKenoGameOfShop = async (req: any, res: any) => {
   try {
-    const branchId = req.payload.branchId;
+    const shopId = req.payload.shopId;
 
-    const current = await getOrCreateCurrentKenoGame(branchId);
+    const current = await getOrCreateCurrentKenoGame(shopId);
 
     let cashierGame = current;
 
     if (current.status != GameStatus.NOT_STARTED) {
-      cashierGame = await getOrCreateCashierKenoGame(branchId);
+      cashierGame = await getOrCreateCashierKenoGame(shopId);
     }
 
     let previous = await db.game.findFirst({
       where: {
         gameType: GameType.KENO,
         status: GameStatus.DONE,
-        branchId,
+        shopId,
       },
       orderBy: { startAt: "desc" },
       include: {
@@ -50,7 +50,7 @@ export const currentKenoGameOfBranch = async (req: any, res: any) => {
     });
 
     const previousWinningNumbers = await getPreviousGameWinningNumbers(
-      branchId
+      shopId
     );
 
     const data: ICurrentKenoGamesResponse = {
@@ -90,12 +90,12 @@ export const getGameDetail = async (req: any, res: any) => {
 
 export const previousGames = async (req: any, res: any) => {
   try {
-    const branchId = req.payload.branchId;
+    const shopId = req.payload.shopId;
 
     let games = await db.game.findMany({
       where: {
         gameType: GameType.KENO,
-        branchId,
+        shopId,
         startAt: {
           lte: new Date(),
         },

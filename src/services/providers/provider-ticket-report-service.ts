@@ -10,7 +10,7 @@ const getCashReports = async (
   providerId: string,
   filterData: IBasicReportSchema
 ): Promise<IServiceResponse<ICommonReport>> => {
-  const { endAt, startAt, agentId, branchId, cashierId, superAgentId } =
+  const { endAt, startAt, agentId, shopId, cashierId, superAgentId } =
     filterData;
 
   const startDate = startAt
@@ -54,10 +54,10 @@ const getCashReports = async (
     },
     cashierId: cashierId ?? {},
     game: {
-      branch: {
+      shop: {
         AND: [
           {
-            id: branchId ?? {},
+            id: shopId ?? {},
           },
           {
             providerId,

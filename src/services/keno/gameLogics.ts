@@ -4,14 +4,14 @@ import db from "../../lib/db";
 import { IKenoGame, IKenoGameForPlay, IKenoPreviousWinningNumbers } from "../../utils/shared/shared-types/keno";
 // Get or create the current game based on existing criteria
 export async function getOrCreateCurrentKenoGame(
-  branchId: string
+  shopId: string
 ): Promise<IKenoGame> { 
 
   let _game = await db.game.findFirst({
     where: {
       status: { not: GameStatus.DONE },
       gameType: GameType.KENO,
-      branchId,
+      shopId,
     },
    
 
@@ -20,7 +20,7 @@ export async function getOrCreateCurrentKenoGame(
   let game = null;
 
   if (!_game) {
-    game = await createNewKenoGame(branchId);
+    game = await createNewKenoGame(shopId);
   } else {
     game = await getKenoGameWithTickets(_game.id);
   }
@@ -28,14 +28,14 @@ export async function getOrCreateCurrentKenoGame(
 }
 
 export async function getOrCreateCashierKenoGame(
-  branchId: string
+  shopId: string
 ): Promise<IKenoGame> {
   
   let _game = await db.game.findFirst({
     where: { 
       status: GameStatus.NOT_STARTED,
       gameType: GameType.KENO,
-      branchId,
+      shopId,
     },
     orderBy: { endAt: "asc" },
    
@@ -43,7 +43,7 @@ export async function getOrCreateCashierKenoGame(
   let game = null;
 
   if (!_game) {
-    game = await createNewKenoGame(branchId);
+    game = await createNewKenoGame(shopId);
   } else {
     game = await getKenoGameWithTickets(_game.id);
   }
@@ -52,12 +52,12 @@ export async function getOrCreateCashierKenoGame(
 
 // Create a new game entry
 export async function createNewKenoGame(
-  branchId: string,
+  shopId: string,
 ): Promise<IKenoGame> {
 
-  const branch = await db.branch.findUnique({
+  const shop = await db.shop.findUnique({
     where: {
-      id: branchId,
+      id: shopId,
     },
     select: {
       name: true,
@@ -68,9 +68,9 @@ export async function createNewKenoGame(
     // }
   })
 
-  const branchName = branch.name.trim();
+  const shopName = shop.name.trim();
  
-  const uniqueId = await generateUniqueIdForAGame(GameType.KENO, branchName);
+  const uniqueId = await generateUniqueIdForAGame(GameType.KENO, shopName);
 
   const {
     startAt,
@@ -83,7 +83,7 @@ export async function createNewKenoGame(
     data: {
       gameType: GameType.KENO,
       uniqueId,
-      branchId,
+      shopId,
       startAt,
       endAt,
       status: GameStatus.NOT_STARTED,
@@ -105,13 +105,13 @@ export async function createNewKenoGame(
 
 
 export const getPreviousGameWinningNumbers = async (
-  branchId: string
+  shopId: string
 ): Promise<IKenoPreviousWinningNumbers[]> => {
   try {
 
     let games = await db.game.findMany({
       where: {
-        branchId,
+        shopId,
         gameType: GameType.KENO,
         status: GameStatus.DONE, 
       },

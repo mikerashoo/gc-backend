@@ -1,7 +1,7 @@
 import db from "../../lib/db";
 import { isProvider } from "../../lib/helper/userRoleHelpers";
 
-export async function isValidBranchForProvider(req, res, next) {
+export async function isValidShopForProvider(req, res, next) {
   // Check if the user is authenticated first
   if (!req.payload || !req.payload.role || !req.payload.providerId) {
     return res.status(401).json({ error: "Un-Authorized" });
@@ -14,26 +14,26 @@ export async function isValidBranchForProvider(req, res, next) {
   }
 
   const providerId = req.payload.providerId; // Assuming the providerId is in the request params
-  const branchId = req.params.branchId; // Assuming the providerId is in the request params
+  const shopId = req.params.shopId; // Assuming the providerId is in the request params
 
-  console.log("Branch Id on isvalidBranchForProvider", branchId);
+  console.log("Shop Id on isvalidShopForProvider", shopId);
 
-  if (!branchId) {
+  if (!shopId) {
     return res
       .status(403)
-      .json({ error: "Branch Id Not Found", message: "Branch Id is required" });
+      .json({ error: "Shop Id Not Found", message: "Shop Id is required" });
   }
-  const validBranch = await db.branch.findFirst({
+  const validShop = await db.shop.findFirst({
     where: {
-      OR: [{ id: branchId }, { identifier: branchId }],
+      OR: [{ id: shopId }, { identifier: shopId }],
       providerId,
     },
   });
 
-  if (!validBranch) {
+  if (!validShop) {
     return res.status(403).json({
-      error: "Invalid branch id",
-      message: "Branch doesn't exist under given provider",
+      error: "Invalid shop id",
+      message: "Shop doesn't exist under given provider",
     });
   }
 

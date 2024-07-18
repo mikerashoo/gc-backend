@@ -1,11 +1,11 @@
 import { IKenoTicket } from "./keno";
-import { IDBBranch, IDBDogRacingGame, IDBGame, IDBKenoGame } from "./prisma-models"; 
+import { IDBShop, IDBDogRacingGame, IDBGame, IDBKenoGame } from "./prisma-models"; 
 import { ITicket, ITicketWithDetail } from "./ticketModels";
 
 export interface IGame extends IDBGame{
     keno: IDBKenoGame,
     dogRacing: IDBDogRacingGame,
-    branch: IDBBranch 
+    shop: IDBShop 
   }
 
  

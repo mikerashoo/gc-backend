@@ -143,7 +143,7 @@ export const searchTIcketByUniqueId = async (req: any, res: any) => {
       });
     }
 
-    const branchId = req.payload.branchId;
+    const shopId = req.payload.shopId;
 
     // Fetch ended games with associated tickets
     let ticket = await db.ticket.findFirst({
@@ -153,7 +153,7 @@ export const searchTIcketByUniqueId = async (req: any, res: any) => {
           mode: "insensitive",
         },
         game: {
-          branchId,
+          shopId,
         },
       },
       include: ticketDetailInclude,
@@ -175,7 +175,7 @@ export const searchTIcketByUniqueId = async (req: any, res: any) => {
 
 export const getKenoTicketDetail = async (req: any, res: any) => {
   try {
-    const branchId = req.payload.branchId;
+    const shopId = req.payload.shopId;
     const ticketId = req.params.ticketId;
 
     // Fetch ended games with associated tickets
@@ -183,7 +183,7 @@ export const getKenoTicketDetail = async (req: any, res: any) => {
       where: {
         id: ticketId,
         game: {
-          branchId,
+          shopId,
         },
       },
       include: ticketDetailInclude,
@@ -198,7 +198,7 @@ export const getKenoTicketDetail = async (req: any, res: any) => {
 
 export const getTodaysTickets = async (req: any, res: any) => {
   try {
-    const branchId = req.payload.branchId;
+    const shopId = req.payload.shopId;
     const cashierId = req.payload.accountId;
 
     const now = new Date();
@@ -215,7 +215,7 @@ export const getTodaysTickets = async (req: any, res: any) => {
       where: {
         cashierId,
         game: {
-          branchId,
+          shopId,
         },
         createdAt: {
           gte: startOfDay.toISOString(),
@@ -226,7 +226,7 @@ export const getTodaysTickets = async (req: any, res: any) => {
       include: {
         game: {
           include: {
-            branch: true,
+            shop: true,
             keno: true,
             dogRacing: true,
           },
@@ -259,7 +259,7 @@ export const getTodaysTickets = async (req: any, res: any) => {
 
 export const markKenoTicketAsPaid = async (req: any, res: any) => {
   try {
-    const branchId = req.payload.branchId;
+    const shopId = req.payload.shopId;
     const cashierId = req.payload.accountId;
 
     const { paidAmount, ticketId } = req.body as ITicketPaymentSchema;
@@ -269,7 +269,7 @@ export const markKenoTicketAsPaid = async (req: any, res: any) => {
       where: {
         id: ticketId,
         game: {
-          branchId,
+          shopId,
         },
       },
     });
@@ -317,7 +317,7 @@ export const markKenoTicketAsPaid = async (req: any, res: any) => {
 
 export const cancelTicket = async (req: any, res: any) => {
   try {
-    const branchId = req.payload.branchId;
+    const shopId = req.payload.shopId;
     const cashierId = req.payload.accountId;
 
     const { ticketId } = req.body as ITicketByIdSchema;
@@ -327,7 +327,7 @@ export const cancelTicket = async (req: any, res: any) => {
       where: {
         id: ticketId,
         game: {
-          branchId,
+          shopId,
         },
       },
     });

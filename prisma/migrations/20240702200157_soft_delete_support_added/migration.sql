@@ -9,7 +9,7 @@
 ALTER TABLE "ProviderAdmin" DROP CONSTRAINT "ProviderAdmin_provideId_fkey";
 
 -- AlterTable
-ALTER TABLE "Branch" ADD COLUMN     "deleted" BOOLEAN NOT NULL DEFAULT false,
+ALTER TABLE "Shop" ADD COLUMN     "deleted" BOOLEAN NOT NULL DEFAULT false,
 ADD COLUMN     "deletedAt" TIMESTAMP(3);
 
 -- AlterTable

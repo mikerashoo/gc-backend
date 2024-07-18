@@ -1,15 +1,15 @@
 import { z } from "zod";  
 import { ActiveStatus } from "../../shared-types/prisma-enums";
 
-export const branchCreateSchema = z.object({
+export const shopCreateSchema = z.object({
     name: z.string(),
     address: z.string(),  
     agentId: z.string().nullable().optional(),
 
   });
-  export type IBranchCreateSchema = z.infer<typeof branchCreateSchema>; 
+  export type IShopCreateSchema = z.infer<typeof shopCreateSchema>; 
     
-  export const branchUpdateSchema = z.object({
+  export const shopUpdateSchema = z.object({
     name: z.string().optional(),
     address: z.string().optional(),  
     status: z.enum([ActiveStatus.ACTIVE, ActiveStatus.IN_ACTIVE]).nullable().optional(),
@@ -17,5 +17,5 @@ export const branchCreateSchema = z.object({
 
   });
     
-  export type IBranchUpdateSchema = z.infer<typeof branchUpdateSchema>; 
+  export type IShopUpdateSchema = z.infer<typeof shopUpdateSchema>; 
 

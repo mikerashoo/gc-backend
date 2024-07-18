@@ -8,7 +8,7 @@ const getUserJWTSignInOption = (user:User) => {
     accountId: user.id,
     role: user.role,
     status: user.status,
-    branchId: user.cashierBranchId,
+    shopId: user.cashierShopId,
     agentProviderId: user.agentProviderId,
     providerId: user.providerId,  
     

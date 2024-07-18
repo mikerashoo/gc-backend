@@ -1,9 +1,9 @@
 -- CreateTable
-CREATE TABLE "BranchGame" (
+CREATE TABLE "ShopGame" (
     "id" TEXT NOT NULL,
-    "branchId" TEXT NOT NULL,
+    "shopId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "BranchGame_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ShopGame_pkey" PRIMARY KEY ("id")
 );

@@ -4,19 +4,19 @@ import { IServiceResponse } from "../../utils/api-helpers/serviceResponse";
 import {
   checkDBColumnDuplicate,
 } from "../../utils/api-helpers/unique-identifier-generator";
-import { IBranchWithDetail } from "../../utils/shared/shared-types/providerAndBranch";
-import { getTicketReportsForBranches } from "../ticket-report-services";
+import { IShopWithDetail } from "../../utils/shared/shared-types/providerAndShop";
+import { getTicketReportsForShops } from "../ticket-report-services";
 import ShortUniqueId = require("short-unique-id");
 import { ICashierRegisterSchema, ICashierUpdateSchema } from "../../utils/shared/schemas/userSchemas";
 import bcrypt = require("bcrypt");
 import { IUser } from "../../utils/shared/shared-types/userModels";
 
-const getBranchCashier = async (
-  branchId: string
+const getShopCashier = async (
+  shopId: string
 ): Promise<IServiceResponse<IUser[]>> => {
   const cashiers = await db.user.findMany({
     where: {
-      cashierBranchId: branchId,
+      cashierShopId: shopId,
     },
   });
 
@@ -31,7 +31,7 @@ const validateCashiers = async (
 ): Promise<IServiceResponse<boolean>> => {
   const validCashiers = await db.user.findMany({
     where: {
-      cashierBranch: {  
+      cashierShop: {  
         providerId: {
           in: providerIds
         },
@@ -64,7 +64,7 @@ const validateCashiers = async (
 };
 
 const addCashier = async (
-  branchId: string,
+  shopId: string,
   cashierInfo: ICashierRegisterSchema
 ): Promise<IServiceResponse<IUser>> => {
   try {
@@ -86,7 +86,7 @@ const addCashier = async (
 
     const cashier = await db.user.create({
       data: {
-       cashierBranchId: branchId,
+       cashierShopId: shopId,
         firstName,
         lastName,
         password: hashedPassword,
@@ -100,7 +100,7 @@ const addCashier = async (
       data: cashier,
     };
   } catch (error) {
-    console.log("Error while adding branch",  error);
+    console.log("Error while adding shop",  error);
     return {
       error: "Something went wrong",
     };
@@ -151,13 +151,13 @@ const updateCashier = async (
 
 const deleteCashier = async (
   id: string,
-  branchId
+  shopId
 ): Promise<IServiceResponse<boolean>> => {
   const deleted = await db.user.delete({
     where: {
       id,
 
-      cashierBranchId: branchId,
+      cashierShopId: shopId,
     },
   });
   return {
@@ -165,8 +165,8 @@ const deleteCashier = async (
   };
 };
 
-export const ProviderBranchCashierService = {
-  list: getBranchCashier, 
+export const ProviderShopCashierService = {
+  list: getShopCashier, 
   add: addCashier,
   validate: validateCashiers,
   update: updateCashier,

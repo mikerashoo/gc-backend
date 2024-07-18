@@ -18,7 +18,7 @@ export const findUserById = async (id: string) => {
       },
       include: {
         provider: true,
-        cashierBranch: true,
+        cashierShop: true,
         agentProvider: true,
       }
     });
@@ -56,7 +56,7 @@ export const findLoginUser = async (userNameInfo: string)=> {
       include: {
         provider: true,
         agentProvider: true,
-        cashierBranch: true,
+        cashierShop: true,
       }
       
     });

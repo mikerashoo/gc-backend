@@ -1,26 +1,26 @@
 /*
   Warnings:
 
-  - You are about to drop the `_BranchToUser` table. If the table is not empty, all the data it contains will be lost.
+  - You are about to drop the `_ShopToUser` table. If the table is not empty, all the data it contains will be lost.
 
 */
 -- DropForeignKey
 ALTER TABLE "Ticket" DROP CONSTRAINT "Ticket_cashierId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "_BranchToUser" DROP CONSTRAINT "_BranchToUser_A_fkey";
+ALTER TABLE "_ShopToUser" DROP CONSTRAINT "_ShopToUser_A_fkey";
 
 -- DropForeignKey
-ALTER TABLE "_BranchToUser" DROP CONSTRAINT "_BranchToUser_B_fkey";
+ALTER TABLE "_ShopToUser" DROP CONSTRAINT "_ShopToUser_B_fkey";
 
 -- DropTable
-DROP TABLE "_BranchToUser";
+DROP TABLE "_ShopToUser";
 
 -- CreateTable
 CREATE TABLE "Cashier" (
     "id" TEXT NOT NULL,
     "cashierId" TEXT NOT NULL,
-    "branchId" TEXT NOT NULL,
+    "shopId" TEXT NOT NULL,
 
     CONSTRAINT "Cashier_pkey" PRIMARY KEY ("id")
 );
@@ -50,7 +50,7 @@ CREATE UNIQUE INDEX "TicketPayment_ticketId_key" ON "TicketPayment"("ticketId");
 ALTER TABLE "Cashier" ADD CONSTRAINT "Cashier_cashierId_fkey" FOREIGN KEY ("cashierId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Cashier" ADD CONSTRAINT "Cashier_branchId_fkey" FOREIGN KEY ("branchId") REFERENCES "Branch"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Cashier" ADD CONSTRAINT "Cashier_shopId_fkey" FOREIGN KEY ("shopId") REFERENCES "Shop"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Ticket" ADD CONSTRAINT "Ticket_cashierId_fkey" FOREIGN KEY ("cashierId") REFERENCES "Cashier"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

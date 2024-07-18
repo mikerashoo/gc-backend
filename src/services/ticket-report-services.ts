@@ -4,8 +4,8 @@ import db from "../lib/db";
 import { ticketDetailInclude } from "./keno/ticketLogics";
 import { TicketStatus } from "@prisma/client";
 
-export const getTicketReportsForBranches = async (
-  branchIds: string[],
+export const getTicketReportsForShops = async (
+  shopIds: string[],
   filterData: {
     start?: any;
     end?: any;
@@ -26,10 +26,10 @@ export const getTicketReportsForBranches = async (
   let totalTickets = 0;
   let totalTicketsCancelled = 0;
 
-  const branches = await db.branch.findMany({
+  const shops = await db.shop.findMany({
     where: {
       id: {
-        in: branchIds,
+        in: shopIds,
       },
     },
     select: {
@@ -41,8 +41,8 @@ export const getTicketReportsForBranches = async (
     },
   });
   let cashierIds = [];
-  branches.forEach((branch) => {
-    cashierIds.push(...branch.cashiers.map((cs) => cs.id));
+  shops.forEach((shop) => {
+    cashierIds.push(...shop.cashiers.map((cs) => cs.id));
   });
 
   console.log("Cashier Ids to filter", cashierIds)
@@ -78,8 +78,8 @@ export const getTicketReportsForBranches = async (
       ticket: {
         status: TicketStatus.PAID,
         game: {
-          branchId: {
-            in: branchIds,
+          shopId: {
+            in: shopIds,
           },
         },
       },

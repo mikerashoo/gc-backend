@@ -7,18 +7,18 @@ import {
   generateIdentifierFromName,
 } from "../../utils/api-helpers/unique-identifier-generator";
 import {
-  IBranchCreateSchema,
-  IBranchUpdateSchema,
-} from "../../utils/shared/schemas/provider/branch-information-schema";
-import { IDBBranch } from "../../utils/shared/shared-types/prisma-models";
-import { IBranchWithDetail } from "../../utils/shared/shared-types/providerAndBranch";
-import { getTicketReportsForBranches } from "../ticket-report-services";
+  IShopCreateSchema,
+  IShopUpdateSchema,
+} from "../../utils/shared/schemas/provider/shop-information-schema";
+import { IDBShop } from "../../utils/shared/shared-types/prisma-models";
+import { IShopWithDetail } from "../../utils/shared/shared-types/providerAndShop";
+import { getTicketReportsForShops } from "../ticket-report-services";
 import ShortUniqueId = require("short-unique-id");
 
-const getProviderBranches = async (
+const getProviderShops = async (
   providerId: string,
   agentId?: string
-): Promise<IServiceResponse<IBranchWithDetail[]>> => {
+): Promise<IServiceResponse<IShopWithDetail[]>> => {
  
 
   const  agentQuery = agentId ? {
@@ -44,7 +44,7 @@ const getProviderBranches = async (
       },
     ],
   } : undefined
-  const branches = await db.branch.findMany({
+  const shops = await db.shop.findMany({
     where: { providerId,
       agent: agentQuery
      },
@@ -71,16 +71,16 @@ const getProviderBranches = async (
   });
 
   return {
-    data: branches,
+    data: shops,
   };
 };
 
-const addBranch = async (
+const addShop = async (
   providerId: string,
-  branchData: IBranchCreateSchema
-): Promise<IServiceResponse<IBranchWithDetail>> => {
+  shopData: IShopCreateSchema
+): Promise<IServiceResponse<IShopWithDetail>> => {
   try {
-    const { address, name, agentId } = branchData;
+    const { address, name, agentId } = shopData;
 
     if(agentId){
       const validSuperAgent = await db.user.findFirst({
@@ -98,7 +98,7 @@ const addBranch = async (
       }
     }
 
-    const nameAlreadyTaken = await checkDBColumnDuplicate("branch", {
+    const nameAlreadyTaken = await checkDBColumnDuplicate("shop", {
       providerId: providerId,
       name: {
         equals: name,
@@ -107,24 +107,24 @@ const addBranch = async (
     });
     if (nameAlreadyTaken) {
       return {
-        error: "Branch With The Same Name Already Exists",
+        error: "Shop With The Same Name Already Exists",
       };
     }
 
-    let branchIdentifier = generateIdentifierFromName(name);
-    let branch = null;
+    let shopIdentifier = generateIdentifierFromName(name);
+    let shop = null;
     try {
-      branchIdentifier = await checkAndAppendRandomNumber(
+      shopIdentifier = await checkAndAppendRandomNumber(
         "identifier",
-        "branch",
-        branchIdentifier
+        "shop",
+        shopIdentifier
       );
 
-      branch = await db.branch.create({
+      shop = await db.shop.create({
         data: {
           providerId,
           address,
-          identifier: branchIdentifier,
+          identifier: shopIdentifier,
           name,
           agentId
 
@@ -154,13 +154,13 @@ const addBranch = async (
         dictionary: ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
       });
 
-      branchIdentifier = `${branchIdentifier}-${randomUUID()}`;
+      shopIdentifier = `${shopIdentifier}-${randomUUID()}`;
 
-      branch = await db.branch.create({
+      shop = await db.shop.create({
         data: {
           providerId,
           address,
-          identifier: branchIdentifier,
+          identifier: shopIdentifier,
           name,
           agentId
         },
@@ -188,21 +188,21 @@ const addBranch = async (
     }
 
     return {
-      data: branch,
+      data: shop,
     };
   } catch (error) {
-    console.log("Error while adding branch", typeof error);
+    console.log("Error while adding shop", typeof error);
     return {
       error: "Something went wrong",
     };
   }
 };
 
-const validateBranches = async (
+const validateShops = async (
   providerIds: string[],
-  branchIds: string[]
+  shopIds: string[]
 ): Promise<IServiceResponse<boolean>> => {
-  const branches = await db.branch.findMany({
+  const shops = await db.shop.findMany({
     where: {
       providerId: {
         in: providerIds,
@@ -210,16 +210,16 @@ const validateBranches = async (
     },
   });
 
-  let providerBranchIds = branches.map((bra) => bra.id);
-  const invalidBranches = branchIds.filter(
-    (bId) => !providerBranchIds.includes(bId)
+  let providerShopIds = shops.map((bra) => bra.id);
+  const invalidShops = shopIds.filter(
+    (bId) => !providerShopIds.includes(bId)
   );
 
-  if (invalidBranches.length > 0) {
+  if (invalidShops.length > 0) {
     return {
       error:
-        "Invalid branch ids provided. Invalid are: " +
-        invalidBranches.toLocaleString(),
+        "Invalid shop ids provided. Invalid are: " +
+        invalidShops.toLocaleString(),
     };
   }
   return {
@@ -227,10 +227,10 @@ const validateBranches = async (
   };
 };
 
-const getBranchDetailById = async (
+const getShopDetailById = async (
   id: string
-): Promise<IServiceResponse<IBranchWithDetail>> => {
-  const branch = await db.branch.findFirst({
+): Promise<IServiceResponse<IShopWithDetail>> => {
+  const shop = await db.shop.findFirst({
     where: {
       OR: [{ id }, { identifier: id }],
     },
@@ -256,29 +256,29 @@ const getBranchDetailById = async (
     },
   });
 
-  if (!branch) {
+  if (!shop) {
     return {
-      error: "Branch With Id Not Found",
+      error: "Shop With Id Not Found",
     };
   }
 
   return {
-    data: branch,
+    data: shop,
   };
 };
 
-const updateBranch = async (
-  branchUpdateData: IBranchUpdateSchema,
-  branchId: string,
+const updateShop = async (
+  shopUpdateData: IShopUpdateSchema,
+  shopId: string,
   providerId: string
-): Promise<IServiceResponse<IBranchWithDetail>> => {
-  const { address, name, status } = branchUpdateData;
+): Promise<IServiceResponse<IShopWithDetail>> => {
+  const { address, name, status } = shopUpdateData;
 
   if (name) {
     console.log("Name exists", name);
-    const nameAlreadyTaken = await checkDBColumnDuplicate("branch", {
+    const nameAlreadyTaken = await checkDBColumnDuplicate("shop", {
       providerId: providerId,
-      id: { not: branchId },
+      id: { not: shopId },
       name: {
         equals: name,
         mode: "insensitive",
@@ -288,13 +288,13 @@ const updateBranch = async (
 
     if (nameAlreadyTaken) {
       return {
-        error: "Branch With The Same Name Already Exists",
+        error: "Shop With The Same Name Already Exists",
       };
     }
   }
 
-  const branch = await db.branch.update({
-    where: { id: branchId },
+  const shop = await db.shop.update({
+    where: { id: shopId },
     data: {
       address,
       name,
@@ -322,12 +322,12 @@ const updateBranch = async (
     },
   });
   return {
-    data: branch,
+    data: shop,
   };
 };
 
-const deleteBranch = async (id: string): Promise<IServiceResponse<boolean>> => {
-  const deleted = await db.branch.delete({
+const deleteShop = async (id: string): Promise<IServiceResponse<boolean>> => {
+  const deleted = await db.shop.delete({
     where: { id },
   });
   return {
@@ -335,11 +335,11 @@ const deleteBranch = async (id: string): Promise<IServiceResponse<boolean>> => {
   };
 };
 
-export const ProviderBranchService = {
-  list: getProviderBranches,
-  detail: getBranchDetailById,
-  validateBranches: validateBranches,
-  add: addBranch,
-  update: updateBranch,
-  delete: deleteBranch,
+export const ProviderShopService = {
+  list: getProviderShops,
+  detail: getShopDetailById,
+  validateShops: validateShops,
+  add: addShop,
+  update: updateShop,
+  delete: deleteShop,
 };
