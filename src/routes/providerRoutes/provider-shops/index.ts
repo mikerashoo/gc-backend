@@ -3,8 +3,7 @@ import { getProviderShops, addShop, getShopReports } from "../../../controllers/
 import { validateData } from "../../../middlewares/validationMiddleware"; 
 import shopManagementRoutes from "./shopManagementRoutes";
 import { shopCreateSchema } from "../../../utils/shared/schemas/provider/shop-information-schema";
-import { ticketReportSchema } from "../../../utils/shared/schemas/reportSchema";  
-const  {isValidShopForProvider}  = require("../../../middlewares/provider/isValidShopForProvider"); 
+import { ticketReportSchema } from "../../../utils/shared/schemas/reportSchema";   
 
  
 const providerShopRoutes = Router({mergeParams: true});
@@ -21,7 +20,7 @@ providerShopRoutes.post('/shop-report',  validateData(ticketReportSchema), getSh
 
 
 
-providerShopRoutes.use('/:shopId', isValidShopForProvider,  shopManagementRoutes); 
+providerShopRoutes.use('/:shopId', shopManagementRoutes); 
 
 
 export default providerShopRoutes;

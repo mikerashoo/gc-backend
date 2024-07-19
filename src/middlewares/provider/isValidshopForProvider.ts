@@ -15,8 +15,7 @@ export async function isValidShopForProvider(req, res, next) {
 
   const providerId = req.payload.providerId; // Assuming the providerId is in the request params
   const shopId = req.params.shopId; // Assuming the providerId is in the request params
-
-  console.log("Shop Id on isvalidShopForProvider", shopId);
+ 
 
   if (!shopId) {
     return res
